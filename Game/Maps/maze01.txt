@@ -1,0 +1,43 @@
+maze01
+-- cell descriptions(symbol/wall_left/wall_right/wall_up/wall_down):
+ 0000
+\1000
+/0100
+T0010
+_0001
+R1010
+H1100
+L1001
+70110
+Z0011
+J0101
+[1011
+M1110
+U1101
+]0111
+O1111
+-- map size (width, height):
+5,5
+-- map cells:
+[]ZT]
+[ZT_]
+RZ/R7
+HOHHH
+UL_JU
+-- number of holes:
+2
+-- holes (row start, column start, row target, column target):
+0,0,3,3
+1,3,0,1
+-- view of the map:
++-+-+-+-+-+
+|o  <     |
++-+-+-+ +-+
+|         |
++-+-+ +-+-+
+|     |   |
++ +-+ + + +
+| |o| | | |
++ +^+ + + +
+| |     | |
++-+-+-+-+-+
