@@ -274,7 +274,7 @@ namespace Game
                     }
                     else if (wallUp == Uncertain && wallDown == Uncertain) 
                     {
-                        fstStr.Append('~');
+                        fstStr.Append(' ');
                     }
                     else
                     {
@@ -295,7 +295,7 @@ namespace Game
                     }
                     else if (wallLeft == Uncertain && wallRight == Uncertain) 
                     {
-                        sndStr.Append(':');
+                        sndStr.Append(' ');
                     }
                     else
                     {
@@ -322,7 +322,7 @@ namespace Game
                 fstStr.Append("+\n");
 
                 var lastWallR = _cells[i, Width - 1].Wall(Right);
-                sndStr.Append( lastWallR == Present ? "|\n" : lastWallR == Absent ? ">\n" : ":\n");
+                sndStr.Append( lastWallR == Present ? "|\n" : lastWallR == Absent ? ">\n" : " \n");
 
                 res.Append(fstStr);
                 res.Append(sndStr);
@@ -331,7 +331,7 @@ namespace Game
             for (var j = 0; j < Width; j++) 
             {
                 var lastWallD = _cells[Height - 1, j].Wall(Down);
-                res.Append(lastWallD == Present ? "+-" : lastWallD == Absent ? "+v" : "+~" );
+                res.Append(lastWallD == Present ? "+-" : lastWallD == Absent ? "+v" : "+ " );
             }
             res.Append('+');
 
@@ -341,13 +341,14 @@ namespace Game
         public void PrintWithComment(string comment) 
         {
             Console.WriteLine(comment);
-            Console.WriteLine();
-            foreach (var ch in ToString())
-            {
-                Print(ch);
-            }
-            Console.ResetColor();
-            Console.WriteLine();
+            Console.WriteLine(); 
+            Console.WriteLine(ToString());
+            //foreach (var ch in ToString())
+            //{
+            //    Print(ch);
+            //}
+            //Console.ResetColor();
+            //Console.WriteLine();
             Console.WriteLine();
         }
 
