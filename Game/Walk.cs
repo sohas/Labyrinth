@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static Game.Direction;
 using static Game.Exploring;
+using static Game.WallState;
 
 namespace Game
 {
@@ -28,13 +29,15 @@ namespace Game
 
         #region ctors
 
-        static Walk() 
+        static Walk()
         {
-            _keyDictionary = new Dictionary<ConsoleKey, Direction>();
-            _keyDictionary[ConsoleKey.LeftArrow] = Left;
-            _keyDictionary[ConsoleKey.RightArrow] = Right;
-            _keyDictionary[ConsoleKey.UpArrow] = Up;
-            _keyDictionary[ConsoleKey.DownArrow] = Down;
+            _keyDictionary = new Dictionary<ConsoleKey, Direction>
+            {
+                [ConsoleKey.LeftArrow] = Left,
+                [ConsoleKey.RightArrow] = Right,
+                [ConsoleKey.UpArrow] = Up,
+                [ConsoleKey.DownArrow] = Down
+            };
         }
 
         public Walk(Map map) 
@@ -53,7 +56,7 @@ namespace Game
             var column = currentCell.Column;
             var row = currentCell.Row;
 
-            if (currentCell.Wall(direction))
+            if (currentCell.Wall(direction) == Present)
             {
                 return Walled;
             }
@@ -84,11 +87,8 @@ namespace Game
             else 
             {
                 var nextCell = _map.Cells[row, column];
-                if (nextCell.Occupied)
-                {
-                    return Occupied;
-                }
-                else if (nextCell.Hole != null)
+
+                if (nextCell.Hole != null)
                 {
                     column = nextCell.Hole.ColumnTarget;
                     row = nextCell.Hole.RowTarget;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using static Game.Direction;
+using static Game.WallState;
 
 namespace Game
 {
@@ -8,12 +9,12 @@ namespace Game
     {
         #region private fields
 
-        private readonly int _column = -1;
-        private readonly int _row = -1;
-        private bool _wallL;
-        private bool _wallR;
-        private bool _wallU;
-        private bool _wallD;
+        private readonly int _column;
+        private readonly int _row;
+        private WallState _wallL;
+        private WallState _wallR;
+        private WallState _wallU;
+        private WallState _wallD;
         private bool _unvisited;
         private Hole _hole;
         private Player _player;
@@ -24,7 +25,6 @@ namespace Game
 
         public int Column => _column;
         public int Row => _row;
-        public Player Player => _player;
         public bool Occupied => _player != null;
         public bool Unvisited => _unvisited;
         public Hole Hole => _hole;
@@ -33,11 +33,11 @@ namespace Game
 
         #region ctors
 
-        public Cell(int column, int row, bool unvusited = false, params Direction[] directions) 
+        public Cell(int column, int row, bool unvisited = false, params Direction[] directions) 
         {
             _column = column;
             _row = row;
-            _unvisited = unvusited;
+            _unvisited = unvisited;
             SetWalls(directions);
         }
 
@@ -51,62 +51,44 @@ namespace Game
                 throw new CellException($"string {walls} has wrong format. must be 4 difits of 0 or 1");
             }
 
-            var res = new List<Direction>();
-
             for (var i = 0; i < 4; i++) 
             {
-                if (walls[i] == '1')
+                var ch = walls[i];
+                if (ch == '1')
                 {
-                    res.Add((Direction)i);
+                    SetWall((Direction)i);
                 }
-                else if (walls[i] != '0') 
+                else if (ch == '0') 
+                {
+                    SetWall((Direction)i, true);
+                }
+                else 
                 {
                     throw new CellException($"string {walls} has wrong format. it must be 4 difits of 0 or 1");
                 }
             }
-
-            SetWalls(res.ToArray());
         }
 
         #endregion
 
         #region private methods
-        private void SetWall(Direction direction)
+        private void SetWall(Direction direction, bool destroy = false)
         {
-            switch (direction)
-            {
-                case Left:
-                    _wallL = true;
-                    break;
-                case Right:
-                    _wallR = true;
-                    break;
-                case Up:
-                    _wallU = true;
-                    break;
-                case Down:
-                    _wallD = true;
-                    break;
-                default:
-                    break;
-            }
-        }
+            WallState wallState = destroy ? Absent : Present;
 
-        private void BreakWall(Direction direction)
-        {
             switch (direction)
             {
                 case Left:
-                    _wallL = false;
+                    _wallL = wallState;
                     break;
                 case Right:
-                    _wallR = false;
+                    _wallR = wallState;
                     break;
                 case Up:
-                    _wallU = false;
+                    _wallU = wallState;
                     break;
                 case Down:
-                    _wallD = false;
+                    _wallD = wallState;
                     break;
                 default:
                     break;
@@ -117,7 +99,7 @@ namespace Game
 
         #region public methods
 
-        public bool Wall(Direction direction)
+        public WallState Wall(Direction direction)
         {
             switch (direction)
             {
@@ -146,7 +128,7 @@ namespace Game
         {
             foreach (var dir in directions)
             {
-                BreakWall(dir);
+                SetWall(dir, true);
             }
         }
 
@@ -170,8 +152,6 @@ namespace Game
         {
             _player = null;
         }
-
-        public bool CanPath(Direction direction) => !Wall(direction);
 
         #endregion
     }

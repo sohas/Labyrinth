@@ -1,4 +1,6 @@
-﻿namespace Game
+﻿using System;
+
+namespace Game
 {
     public class Hole
     {
@@ -16,6 +18,7 @@
         public int RowTarget => _rowTarget;
 
         #endregion
+
 
         #region ctors
 

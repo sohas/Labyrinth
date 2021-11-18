@@ -1,4 +1,4 @@
-maze01
+maze1
 -- cell descriptions(symbol/wall_left/wall_right/wall_up/wall_down):
  0000
 \1000
@@ -24,16 +24,19 @@ O1111
 RZ/R7
 HOHHH
 UL_JU
+-- player (row, column):
+1,1
 -- number of holes:
 2
 -- holes (row start, column start, row target, column target):
 0,0,3,3
 1,3,0,1
+
 -- view of the map:
 +-+-+-+-+-+
 |o  <     |
 +-+-+-+ +-+
-|         |
+|  i      |
 +-+-+ +-+-+
 |     |   |
 + +-+ + + +

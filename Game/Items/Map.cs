@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using static Game.Direction;
+using static Game.WallState;
+using static Game.ConsoleStyle;
 
 namespace Game
 {
@@ -32,7 +34,7 @@ namespace Game
 
 
         #region ctors
-        public Map(string name, int width, int height, bool allUnvisited = false, bool allWalls = false) 
+        public Map(string name, int width, int height, bool allUnvisited = false) 
         {
             _name = name;
             _width = width;
@@ -43,10 +45,10 @@ namespace Game
                 for (var j = 0; j < width; j++) 
                 {
                     _cells[i, j] = new Cell(j, i, allUnvisited);
-                    if (allWalls) 
-                    { 
-                        _cells[i, j].SetWalls(Left, Right, Up, Down); 
-                    }
+                    //if (allWalls) 
+                    //{ 
+                    //    _cells[i, j].SetWalls(Left, Right, Up, Down); 
+                    //}
                 }
             }
         }
@@ -125,20 +127,52 @@ namespace Game
                 }
             }
 
+            if (lines.Length < 23 + height)
+            {
+                throw new MapException($"very few lines in the map file ({lines.Length}). " +
+                    $"it must contain at least 1 line of name, 1 empty line, 16 lines of mask, 1 empty line," +
+                    $"line of map size ({height},{width} in this case), 1 empty line, {height} lines of map description," +
+                    $"1 empty line and line to describe player.");
+            }
+
+            var playerDescription = lines[22 + height].Split(',');
+            
+            if (playerDescription.Length != 2)
+            {
+                throw new MapException($"in this line ({22 + height}) must be 2 positive digits (or 0), devided by comma: " +
+                    $"column, row. these ara player coordinates. column must be < {width}, row must be < {height}");
+            }
+
+            int playerColumn, playerRow;
+
+            if (int.TryParse(playerDescription[0], out playerColumn) &&
+                        int.TryParse(playerDescription[1], out playerRow) &&
+                        playerColumn >= 0 && playerColumn < width &&
+                        playerRow >= 0 && playerRow < height)
+            {
+                _player = new Player();
+                _cells[playerRow, playerColumn].Occupy(_player);
+            }
+            else 
+            {
+                throw new MapException($"in this line ({22 + height}) must be 2 positive digits (or 0), devided by comma: " +
+                    $"column, row. these ara player coordinates. column must be < {width}, row must be < {height}");
+            }
+
             int holesCount;
 
-            if (lines.Length > 22 + height && int.TryParse(lines[22 + height], out holesCount))
+            if (lines.Length > 24 + height && int.TryParse(lines[24 + height], out holesCount))
             {
-                for (var i = 24 + height; i < 24 + height + holesCount; i++) 
+                for (var i = 26 + height; i < 26 + height + holesCount; i++)
                 {
                     var holeDescription = lines[i].Split(',');
-                    
-                    if (holeDescription.Length != 4) 
+
+                    if (holeDescription.Length != 4)
                     {
                         throw new MapException($"in this line ({i}) must be 4 positive digits (or 0), devided by comma: " +
                             $"column start, row start, column target, row target. column must be < {width}, row must be < {height}");
                     }
-                    
+
                     int columnStart, rowStart, columnTarget, rowTarget;
 
                     if (int.TryParse(holeDescription[0], out columnStart) &&
@@ -152,7 +186,7 @@ namespace Game
                     {
                         _cells[rowStart, columnStart].SetHole(new Hole(columnTarget, rowTarget));
                     }
-                    else 
+                    else
                     {
                         throw new MapException($"in this line ({i}) must be 4 positive digits (or 0), devided by comma: " +
                             $"column start, row start, column target, row target. column must be < {width}, row must be < {height}");
@@ -213,66 +247,72 @@ namespace Game
                 for (var j = 0; j < Width; j++) 
                 {
                     fstStr.Append('+');
-                    
-                    bool wallUp, wallDown, wallLeft, wallRight, occupied, hole, unvisited;
 
-                    wallUp = i==0 || _cells[i - 1, j].Wall(Down);
+                    WallState wallUp, wallDown, wallLeft, wallRight;
+                    bool occupied, hole, unvisited;
+
+                    wallUp = i==0 ? _cells[i, j].Wall(Up) : _cells[i - 1, j].Wall(Down);
                     wallDown = _cells[i, j].Wall(Up);
-                    wallLeft = j==0 || _cells[i, j - 1].Wall(Right);
+                    wallLeft = j==0 ? _cells[i, j].Wall(Left) : _cells[i, j - 1].Wall(Right);
                     wallRight = _cells[i, j].Wall(Left);
                     occupied = _cells[i, j].Occupied;
                     hole = _cells[i, j].Hole != null;
                     unvisited = _cells[i, j].Unvisited;
 
-                    if (wallUp && wallDown)
-                    {
-                        fstStr.Append('-');
-                    }
-                    else if (wallUp && !wallDown)
+
+                    if (wallUp == Present && wallDown == Absent)
                     {
                         fstStr.Append('^');
                     }
-                    else if (!wallUp && wallDown)
+                    else if (wallUp == Absent && wallDown == Present)
                     {
                         fstStr.Append('v');
+                    }
+                    else if (wallUp == Present || wallDown == Present)
+                    {
+                        fstStr.Append('-');
+                    }
+                    else if (wallUp == Uncertain && wallDown == Uncertain) 
+                    {
+                        fstStr.Append('~');
                     }
                     else
                     {
                         fstStr.Append(' ');
                     }
 
-                    if (wallLeft && wallRight)
-                    {
-                        sndStr.Append('|');
-                    }
-                    else if (wallLeft && !wallRight)
+                    if (wallLeft == Present && wallRight == Absent)
                     {
                         sndStr.Append('<');
                     }
-                    else if (!wallLeft && wallRight)
+                    else if (wallLeft == Absent && wallRight == Present)
                     {
                         sndStr.Append('>');
+                    }
+                    else if (wallLeft == Present || wallRight == Present)
+                    {
+                        sndStr.Append('|');
+                    }
+                    else if (wallLeft == Uncertain && wallRight == Uncertain) 
+                    {
+                        sndStr.Append(':');
                     }
                     else
                     {
                         sndStr.Append(' ');
                     }
 
-                    if (occupied && hole)
+                    if (unvisited)
                     {
-                        sndStr.Append('x');
-                    }
-                    else if (occupied)
-                    {
-                        sndStr.Append('i');
+                        sndStr.Append('X');
                     }
                     else if (hole)
                     {
                         sndStr.Append('o');
                     }
-                    else if (unvisited) 
+                    else if (occupied)
                     {
-                        sndStr.Append('X');
+                        sndStr.Append('i');
                     }
                     else
                     {
@@ -280,13 +320,18 @@ namespace Game
                     }
                 }
                 fstStr.Append("+\n");
-                sndStr.Append(_cells[i, Width - 1].Wall(Right) ? "|\n" : ">\n");
+
+                var lastWallR = _cells[i, Width - 1].Wall(Right);
+                sndStr.Append( lastWallR == Present ? "|\n" : lastWallR == Absent ? ">\n" : ":\n");
+
                 res.Append(fstStr);
                 res.Append(sndStr);
             }
+
             for (var j = 0; j < Width; j++) 
             {
-                res.Append(_cells[Height - 1, j].Wall(Down) ? "+-" : "+v");
+                var lastWallD = _cells[Height - 1, j].Wall(Down);
+                res.Append(lastWallD == Present ? "+-" : lastWallD == Absent ? "+v" : "+~" );
             }
             res.Append('+');
 
@@ -297,7 +342,12 @@ namespace Game
         {
             Console.WriteLine(comment);
             Console.WriteLine();
-            Console.WriteLine(ToString());
+            foreach (var ch in ToString())
+            {
+                Print(ch);
+            }
+            Console.ResetColor();
+            Console.WriteLine();
             Console.WriteLine();
         }
 

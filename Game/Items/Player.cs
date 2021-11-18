@@ -24,13 +24,8 @@ namespace Game
 
         public Player() { }
 
-        public Player(Cell cell) 
-        {
-            _cell = cell;
-            _cell.Occupy(this);
-        }
-
         #endregion
+
 
         #region public methods
         public void TakeCell(Cell cell) 

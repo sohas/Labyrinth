@@ -28,7 +28,7 @@ namespace Game
             _counter = 0;
             _exploredMaps = new List<Map>();
             _walk = new Walk(map);
-            _exploringMap = new Map($"{map.Name}ex{_counter}", map.Width * 2 - 1, map.Height * 2 - 1, true, true);
+            _exploringMap = new Map($"{map.Name}ex{_counter}", map.Width * 2 - 1, map.Height * 2 - 1, true);
             _explorer = new Player();
             _exploringMap.TakePlayer(_explorer, map.Width - 1, map.Height - 1);
         }
@@ -77,9 +77,6 @@ namespace Game
                     _exploringMap.Cells[row, column].SetWalls(direction);
                     return;
 
-                case Occupied:
-                    return;
-
                 case Passed:
                     switch (direction) 
                     {
@@ -118,13 +115,15 @@ namespace Game
                             row++;
                             break;
                     }
+                    currentCell.BreakWalls(direction);
                     currentCell = _exploringMap.Cells[row, column];
+                    currentCell.BreakWalls(TakeOpposite(direction));
                     currentCell.SetHole(new Hole(-1, -1));
                     _exploringMap.Player.TakeCell(currentCell);
                     _exploredMaps.Add(_exploringMap);
                     _counter++;
                     Map map = _walk.Map;
-                    _exploringMap = new Map($"{map.Name}ex{_counter}", map.Width * 2 - 1, map.Height * 2 - 1, true, true);
+                    _exploringMap = new Map($"{map.Name}ex{_counter}", map.Width * 2 - 1, map.Height * 2 - 1, true);
                     _explorer = new Player();
                     _exploringMap.TakePlayer(_explorer, map.Width - 1, map.Height - 1);
                     return;
@@ -142,6 +141,14 @@ namespace Game
                 if (key == ConsoleKey.Escape || _exploringMap.Player == null)
                 {
                     return;
+                }
+
+                if (key == ConsoleKey.P) 
+                {
+                    foreach (var map in _exploredMaps) 
+                    {
+                        map.PrintWithComment(map.Name);
+                    }
                 }
 
                 else if (_walk.KeyDictionary.ContainsKey(key))
