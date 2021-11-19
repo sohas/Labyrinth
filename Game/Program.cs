@@ -30,6 +30,7 @@ namespace Game
                 
                 isParsed = int.TryParse(key.KeyChar + Console.ReadLine(), out gameNumber);
             }
+            Console.WriteLine();
 
             var directory = Environment.CurrentDirectory + "\\Maps\\";
             var mapName = $"maze{gameNumber}.txt";

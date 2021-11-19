@@ -108,11 +108,11 @@ namespace Game
 
             if (_map.Player == null) 
             {
-                _map.PrintWithComment(Empty.ToName());
+                _map.PrintMap(Empty.ToName());
                 return;
             }
 
-            _map.PrintWithComment($"it is a labyrinth. you can move with arrows. esc - exit");
+            _map.PrintMap($"it is a labyrinth. you can move with arrows. esc - exit");
 
             while (true)
             {
@@ -125,7 +125,7 @@ namespace Game
 
                 else if (_keyDictionary.ContainsKey(key)) 
                 {
-                    _map.PrintWithComment(Step(_keyDictionary[key]).ToName());
+                    _map.PrintMap(Step(_keyDictionary[key]).ToName());
                 }
             }
         }

@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using static Game.Direction;
 using static Game.WallState;
-using static Game.ConsoleStyle;
+using static Game.MapSymbol;
 
 namespace Game
 {
@@ -246,7 +246,7 @@ namespace Game
                 var sndStr = new StringBuilder();
                 for (var j = 0; j < Width; j++) 
                 {
-                    fstStr.Append('+');
+                    fstStr.Append(Cross.ToName());
 
                     WallState wallUp, wallDown, wallLeft, wallRight;
                     bool occupied, hole, unvisited;
@@ -262,67 +262,72 @@ namespace Game
 
                     if (wallUp == Present && wallDown == Absent)
                     {
-                        fstStr.Append('^');
+                        fstStr.Append(MapSymbol.DiodeUp.ToName());
                     }
                     else if (wallUp == Absent && wallDown == Present)
                     {
-                        fstStr.Append('v');
+                        fstStr.Append(MapSymbol.DiodeDown.ToName());
                     }
                     else if (wallUp == Present || wallDown == Present)
                     {
-                        fstStr.Append('-');
+                        fstStr.Append(MapSymbol.WallPresentHorizontal.ToName());
                     }
                     else if (wallUp == Uncertain && wallDown == Uncertain) 
                     {
-                        fstStr.Append(' ');
+                        fstStr.Append(MapSymbol.WallUnsertainHorizontal.ToName());
                     }
                     else
                     {
-                        fstStr.Append(' ');
+                        fstStr.Append(MapSymbol.WallAbsentHorizontal.ToName());
                     }
 
                     if (wallLeft == Present && wallRight == Absent)
                     {
-                        sndStr.Append('<');
+                        sndStr.Append(MapSymbol.DiodeLeft.ToName());
                     }
                     else if (wallLeft == Absent && wallRight == Present)
                     {
-                        sndStr.Append('>');
+                        sndStr.Append(MapSymbol.DiodeRight.ToName());
                     }
                     else if (wallLeft == Present || wallRight == Present)
                     {
-                        sndStr.Append('|');
+                        sndStr.Append(MapSymbol.WallPresentVertical.ToName());
                     }
                     else if (wallLeft == Uncertain && wallRight == Uncertain) 
                     {
-                        sndStr.Append(' ');
+                        sndStr.Append(MapSymbol.WallUnsertainVertical.ToName());
                     }
                     else
                     {
-                        sndStr.Append(' ');
+                        sndStr.Append(MapSymbol.WallAbsentVertical.ToName());
                     }
 
                     if (unvisited)
                     {
-                        sndStr.Append('X');
+                        sndStr.Append(MapSymbol.Unvisited.ToName());
                     }
                     else if (hole)
                     {
-                        sndStr.Append('o');
+                        sndStr.Append(MapSymbol.Hole.ToName());
                     }
                     else if (occupied)
                     {
-                        sndStr.Append('i');
+                        sndStr.Append(MapSymbol.Player.ToName());
                     }
                     else
                     {
-                        sndStr.Append(' ');
+                        sndStr.Append(MapSymbol.Visited.ToName());
                     }
                 }
-                fstStr.Append("+\n");
+                fstStr.Append(MapSymbol.Cross.ToName() + "\n");
 
                 var lastWallR = _cells[i, Width - 1].Wall(Right);
-                sndStr.Append( lastWallR == Present ? "|\n" : lastWallR == Absent ? ">\n" : " \n");
+                sndStr.Append(
+                    lastWallR == Present ? 
+                    MapSymbol.WallPresentVertical.ToName() + "\n" : 
+                    lastWallR == Absent ? 
+                    MapSymbol.DiodeRight.ToName() + "\n" : 
+                    MapSymbol.WallUnsertainVertical.ToName() + "\n");
 
                 res.Append(fstStr);
                 res.Append(sndStr);
@@ -331,24 +336,26 @@ namespace Game
             for (var j = 0; j < Width; j++) 
             {
                 var lastWallD = _cells[Height - 1, j].Wall(Down);
-                res.Append(lastWallD == Present ? "+-" : lastWallD == Absent ? "+v" : "+ " );
+                res.Append(
+                    lastWallD == Present ? 
+                    MapSymbol.Cross.ToName() + MapSymbol.WallPresentHorizontal.ToName() : 
+                    lastWallD == Absent ?
+                    MapSymbol.Cross.ToName() + MapSymbol.WallAbsentHorizontal.ToName():
+                    MapSymbol.Cross.ToName() + MapSymbol.WallUnsertainHorizontal.ToName());
             }
-            res.Append('+');
+            res.Append(MapSymbol.Cross.ToName());
 
             return res.ToString();
         }
 
-        public void PrintWithComment(string comment) 
+        public void PrintMap(string comment = null) 
         {
-            Console.WriteLine(comment);
-            Console.WriteLine(); 
+            if (comment != null)
+            {
+                Console.WriteLine(comment);
+                Console.WriteLine();
+            } 
             Console.WriteLine(ToString());
-            //foreach (var ch in ToString())
-            //{
-            //    Print(ch);
-            //}
-            //Console.ResetColor();
-            //Console.WriteLine();
             Console.WriteLine();
         }
 

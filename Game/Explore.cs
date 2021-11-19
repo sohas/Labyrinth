@@ -25,10 +25,10 @@ namespace Game
 
         public Explore(Map map)
         {
-            _counter = 0;
+            _counter = 1;
             _exploredMaps = new List<Map>();
             _walk = new Walk(map);
-            _exploringMap = new Map($"{map.Name}ex{_counter}", map.Width * 2 - 1, map.Height * 2 - 1, true);
+            _exploringMap = new Map($"{map.Name} explore {_counter}", map.Width * 2 - 1, map.Height * 2 - 1, true);
             _explorer = new Player();
             _exploringMap.TakePlayer(_explorer, map.Width - 1, map.Height - 1);
         }
@@ -123,7 +123,7 @@ namespace Game
                     _exploredMaps.Add(_exploringMap);
                     _counter++;
                     Map map = _walk.Map;
-                    _exploringMap = new Map($"{map.Name}ex{_counter}", map.Width * 2 - 1, map.Height * 2 - 1, true);
+                    _exploringMap = new Map($"{map.Name} explore {_counter}", map.Width * 2 - 1, map.Height * 2 - 1, true);
                     _explorer = new Player();
                     _exploringMap.TakePlayer(_explorer, map.Width - 1, map.Height - 1);
                     return;
@@ -132,7 +132,7 @@ namespace Game
 
         public void Move()
         {
-            _exploringMap.PrintWithComment($"it is a labyrinth. you can move with arrows. esc - exit");
+            _exploringMap.PrintMap($"it is a labyrinth. you can move with arrows. esc - exit");
 
             while (true)
             {
@@ -145,9 +145,12 @@ namespace Game
 
                 if (key == ConsoleKey.P) 
                 {
+                    Console.WriteLine();
+                    Console.WriteLine();
+
                     foreach (var map in _exploredMaps) 
                     {
-                        map.PrintWithComment(map.Name);
+                        map.PrintMap(map.Name);
                     }
                 }
 
@@ -156,7 +159,7 @@ namespace Game
                     var direction = _walk.KeyDictionary[key];
                     var exploring = _walk.Step(direction);
                     Step(direction, exploring);
-                    _exploringMap.PrintWithComment(exploring.ToName());
+                    _exploringMap.PrintMap(exploring.ToName());
                 }
             }
         }
