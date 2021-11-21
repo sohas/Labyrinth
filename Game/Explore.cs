@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Game.Direction;
-using static Game.Exploring;
 
 namespace Game
 {
@@ -28,7 +24,7 @@ namespace Game
             _counter = 1;
             _exploredMaps = new List<Map>();
             _walk = new Walk(map);
-            _exploringMap = new Map($"{map.Name} explore {_counter}", map.Width * 2 - 1, map.Height * 2 - 1, true);
+            _exploringMap = new Map($"{map.Name} explore {_counter}", (map.Width * 2) - 1, (map.Height * 2) - 1, true);
             _explorer = new Player();
             _exploringMap.TakePlayer(_explorer, map.Width - 1, map.Height - 1);
         }
@@ -39,19 +35,14 @@ namespace Game
 
         private static Direction TakeOpposite(Direction direction)
         {
-            switch (direction)
+            return direction switch
             {
-                case Left:
-                    return Right;
-                case Right:
-                    return Left;
-                case Up:
-                    return Down;
-                case Down:
-                    return Up;
-                default:
-                    throw new Exception("");
-            }
+                Left => Right,
+                Right => Left,
+                Up => Down,
+                Down => Up,
+                _ => throw new NotImplementedException(),
+            };
         }
 
         #endregion
@@ -62,44 +53,22 @@ namespace Game
 
         public void Step(Direction direction, Exploring exploring)
         {
-            var currentCell = _exploringMap.Player.Cell;
-            var column = currentCell.Column;
-            var row = currentCell.Row;
+            Cell currentCell = _exploringMap.Player.Cell;
+            int column = currentCell.Column;
+            int row = currentCell.Row;
 
-            switch (exploring) 
+            switch (exploring)
             {
-                case Out:
+                case Exploring.Out:
                     _exploringMap.ExtractPlayer();
                     _exploredMaps.Add(_exploringMap);
                     return;
 
-                case Walled:
+                case Exploring.Walled:
                     _exploringMap.Cells[row, column].SetWalls(direction);
                     return;
 
-                case Passed:
-                    switch (direction) 
-                    {
-                        case Left:
-                            column--;
-                            break;
-                        case Right:
-                            column++;
-                            break;
-                        case Up:
-                            row--;
-                            break;
-                        case Down:
-                            row++;
-                            break;
-                    }
-                    currentCell.BreakWalls(direction);
-                    currentCell = _exploringMap.Cells[row, column];
-                    currentCell.BreakWalls(TakeOpposite(direction));
-                    _exploringMap.Player.TakeCell(currentCell);
-                    break;
-
-                case Holed:
+                case Exploring.Passed:
                     switch (direction)
                     {
                         case Left:
@@ -114,6 +83,31 @@ namespace Game
                         case Down:
                             row++;
                             break;
+                        default:
+                            break;
+                    }
+                    currentCell.BreakWalls(direction);
+                    currentCell = _exploringMap.Cells[row, column];
+                    _exploringMap.Player.TakeCell(currentCell);
+                    break;
+
+                case Exploring.Holed:
+                    switch (direction)
+                    {
+                        case Left:
+                            column--;
+                            break;
+                        case Right:
+                            column++;
+                            break;
+                        case Up:
+                            row--;
+                            break;
+                        case Down:
+                            row++;
+                            break;
+                        default:
+                            break;
                     }
                     currentCell.BreakWalls(direction);
                     currentCell = _exploringMap.Cells[row, column];
@@ -123,10 +117,16 @@ namespace Game
                     _exploredMaps.Add(_exploringMap);
                     _counter++;
                     Map map = _walk.Map;
-                    _exploringMap = new Map($"{map.Name} explore {_counter}", map.Width * 2 - 1, map.Height * 2 - 1, true);
+                    _exploringMap = new Map($"{map.Name} explore {_counter}", (map.Width * 2) - 1, (map.Height * 2) - 1, true);
                     _explorer = new Player();
                     _exploringMap.TakePlayer(_explorer, map.Width - 1, map.Height - 1);
                     return;
+
+                case Exploring.Empty:
+                    break;
+
+                default:
+                    break;
             }
         }
 
@@ -136,28 +136,28 @@ namespace Game
 
             while (true)
             {
-                var key = Console.ReadKey().Key;
+                ConsoleKey key = Console.ReadKey().Key;
 
                 if (key == ConsoleKey.Escape || _exploringMap.Player == null)
                 {
                     return;
                 }
 
-                if (key == ConsoleKey.P) 
+                if (key == ConsoleKey.P)
                 {
                     Console.WriteLine();
                     Console.WriteLine();
 
-                    foreach (var map in _exploredMaps) 
+                    foreach (Map map in _exploredMaps)
                     {
                         map.PrintMap(map.Name);
                     }
                 }
 
-                else if (_walk.KeyDictionary.ContainsKey(key))
+                else if (Walk.KeyDictionary.ContainsKey(key))
                 {
-                    var direction = _walk.KeyDictionary[key];
-                    var exploring = _walk.Step(direction);
+                    Direction direction = Walk.KeyDictionary[key];
+                    Exploring exploring = _walk.Step(direction);
                     Step(direction, exploring);
                     _exploringMap.PrintMap(exploring.ToName());
                 }

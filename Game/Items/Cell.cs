@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using static Game.Direction;
-using static Game.WallState;
 
 namespace Game
 {
@@ -33,7 +31,7 @@ namespace Game
 
         #region ctors
 
-        public Cell(int column, int row, bool unvisited = false, params Direction[] directions) 
+        public Cell(int column, int row, bool unvisited = false, params Direction[] directions)
         {
             _column = column;
             _row = row;
@@ -41,28 +39,28 @@ namespace Game
             SetWalls(directions);
         }
 
-        public Cell(int column, int row, string walls) 
+        public Cell(int column, int row, string walls)
         {
             _column = column;
             _row = row;
 
-            if (walls.Length != 4) 
+            if (walls.Length != 4)
             {
                 throw new CellException($"string {walls} has wrong format. must be 4 difits of 0 or 1");
             }
 
-            for (var i = 0; i < 4; i++) 
+            for (int i = 0; i < 4; i++)
             {
-                var ch = walls[i];
+                char ch = walls[i];
                 if (ch == '1')
                 {
                     SetWall((Direction)i);
                 }
-                else if (ch == '0') 
+                else if (ch == '0')
                 {
                     SetWall((Direction)i, true);
                 }
-                else 
+                else
                 {
                     throw new CellException($"string {walls} has wrong format. it must be 4 difits of 0 or 1");
                 }
@@ -74,7 +72,7 @@ namespace Game
         #region private methods
         private void SetWall(Direction direction, bool destroy = false)
         {
-            WallState wallState = destroy ? Absent : Present;
+            WallState wallState = destroy ? WallState.Absent : WallState.Present;
 
             switch (direction)
             {
@@ -118,7 +116,7 @@ namespace Game
 
         public void SetWalls(params Direction[] directions)
         {
-            foreach (var dir in directions)
+            foreach (Direction dir in directions)
             {
                 SetWall(dir);
             }
@@ -126,20 +124,20 @@ namespace Game
 
         public void BreakWalls(params Direction[] directions)
         {
-            foreach (var dir in directions)
+            foreach (Direction dir in directions)
             {
                 SetWall(dir, true);
             }
         }
 
-        public void SetHole(Hole hole) 
+        public void SetHole(Hole hole)
         {
             _hole = hole;
         }
-        
-        public void Occupy(Player player) 
+
+        public void Occupy(Player player)
         {
-            if (_player == player) 
+            if (_player == player)
             {
                 return;
             }

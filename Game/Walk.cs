@@ -1,12 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Game.Direction;
-using static Game.Exploring;
-using static Game.WallState;
 
 namespace Game
 {
@@ -20,9 +14,9 @@ namespace Game
         #endregion
 
         #region public properties
-        
+
         public Map Map => _map;
-        public Dictionary<ConsoleKey, Direction> KeyDictionary =>_keyDictionary;
+        public static Dictionary<ConsoleKey, Direction> KeyDictionary => _keyDictionary;
 
         #endregion
 
@@ -40,29 +34,29 @@ namespace Game
             };
         }
 
-        public Walk(Map map) 
+        public Walk(Map map)
         {
             _map = map;
         }
 
         #endregion
-        
+
 
         #region public methods
 
-        public Exploring Step(Direction direction) 
+        public Exploring Step(Direction direction)
         {
-            var currentCell = _map.Player.Cell;
-            var column = currentCell.Column;
-            var row = currentCell.Row;
+            Cell currentCell = _map.Player.Cell;
+            int column = currentCell.Column;
+            int row = currentCell.Row;
 
-            if (currentCell.Wall(direction) == Present)
+            if (currentCell.Wall(direction) == WallState.Present)
             {
-                return Walled;
+                return Exploring.Walled;
             }
-            else 
+            else
             {
-                switch (direction) 
+                switch (direction)
                 {
                     case Left:
                         column--;
@@ -76,39 +70,41 @@ namespace Game
                     case Down:
                         row++;
                         break;
+                    default:
+                        break;
                 }
             }
 
             if (column < 0 || column >= _map.Width || row < 0 || row >= _map.Height)
             {
                 _map.ExtractPlayer();
-                return Out;
+                return Exploring.Out;
             }
-            else 
+            else
             {
-                var nextCell = _map.Cells[row, column];
+                Cell nextCell = _map.Cells[row, column];
 
                 if (nextCell.Hole != null)
                 {
                     column = nextCell.Hole.ColumnTarget;
                     row = nextCell.Hole.RowTarget;
                     _map.Player.TakeCell(_map.Cells[row, column]);
-                    return Holed;
+                    return Exploring.Holed;
                 }
-                else 
+                else
                 {
                     _map.Player.TakeCell(nextCell);
-                    return Passed;
+                    return Exploring.Passed;
                 }
             }
         }
 
-        public void Move() 
+        public void Move()
         {
 
-            if (_map.Player == null) 
+            if (_map.Player == null)
             {
-                _map.PrintMap(Empty.ToName());
+                _map.PrintMap(Exploring.Empty.ToName());
                 return;
             }
 
@@ -116,20 +112,20 @@ namespace Game
 
             while (true)
             {
-                var key = Console.ReadKey().Key;
+                ConsoleKey key = Console.ReadKey().Key;
 
                 if (key == ConsoleKey.Escape || _map.Player == null)
                 {
                     return;
                 }
 
-                else if (_keyDictionary.ContainsKey(key)) 
+                else if (_keyDictionary.ContainsKey(key))
                 {
                     _map.PrintMap(Step(_keyDictionary[key]).ToName());
                 }
             }
         }
-        
+
         #endregion
     }
 }

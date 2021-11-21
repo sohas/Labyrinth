@@ -28,9 +28,9 @@ namespace Game
 
 
         #region public methods
-        public void TakeCell(Cell cell) 
+        public void TakeCell(Cell cell)
         {
-            if (_cell == cell) 
+            if (_cell == cell)
             {
                 return;
             }
@@ -44,9 +44,9 @@ namespace Game
             _cell.Occupy(this);
         }
 
-        public void LeaveCell() 
+        public void LeaveCell()
         {
-            if (_cell != null) 
+            if (_cell != null)
             {
                 _cell.Leave();
             }
