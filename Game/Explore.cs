@@ -24,9 +24,9 @@ namespace Game
             _counter = 1;
             _exploredMaps = new List<Map>();
             _walk = new Walk(map);
-            _exploringMap = new Map($"{map.Name} explore {_counter}", (map.Width * 2) - 1, (map.Height * 2) - 1, true);
+            _exploringMap = new Map($"{map.Name} explore {_counter}", (map.Width * 2) + 1, (map.Height * 2) + 1, true);
             _explorer = new Player();
-            _exploringMap.TakePlayer(_explorer, map.Width - 1, map.Height - 1);
+            _exploringMap.TakePlayer(_explorer, map.Width, map.Height);
         }
 
         #endregion

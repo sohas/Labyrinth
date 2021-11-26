@@ -6,7 +6,7 @@ namespace Game
     {
         static void Main(string[] args)
         {
-            int maxGameNumber = 1;
+            int maxGameNumber = 2;
             Console.WriteLine($"it is labyrinth game. put number 1-{maxGameNumber} to choose labyrinth.\n\n" +
                 $"you can explore it by walking (put arrows). firstly you see only X in every cell.\n" +
                 $"your cell is marked as i. when you walk, you can see path. there are some holes in every labyrinth.\n" +

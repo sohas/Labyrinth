@@ -195,13 +195,13 @@ namespace Game
         {
             MapSymbol current = res[y, x];
 
-            int resHigh = res.GetLength(0);
+            int resHeight = res.GetLength(0);
             int resWidth = res.GetLength(1);
 
             if (x < 0 ||
                 y < 0 ||
                 x >= resWidth ||
-                y >= resHigh ||
+                y >= resHeight ||
                 (current != MapSymbol.CrossPresent && current != MapSymbol.CrossAbsent))
             {
                 return -1;
@@ -212,7 +212,7 @@ namespace Game
             MapSymbol wallLeft = x == 0 ? MapSymbol.WallAbsentHorizontal : res[y, x - 1];
             MapSymbol wallRight = x == resWidth - 1 ? MapSymbol.WallAbsentHorizontal : res[y, x + 1];
             MapSymbol wallUp = y == 0 ? MapSymbol.WallAbsentVertical : res[y - 1, x];
-            MapSymbol wallDown = y == resHigh - 1 ? MapSymbol.WallAbsentVertical : res[y + 1, x];
+            MapSymbol wallDown = y == resHeight - 1 ? MapSymbol.WallAbsentVertical : res[y + 1, x];
 
             if (wallLeft is MapSymbol.WallAbsentHorizontal or MapSymbol.WallUnsertainHorizontal)
             {
@@ -241,24 +241,24 @@ namespace Game
 
         public void MakePerimetr()
         {
-            for (int i = 0; i < Height; i++)
+            for (int i = 0; i < _height; i++)
             {
                 _cells[i, 0].SetWalls(Left);
-                _cells[i, Width - 1].SetWalls(Right);
+                _cells[i, _width - 1].SetWalls(Right);
             }
-            for (int j = 0; j < Width; j++)
+            for (int j = 0; j < _width; j++)
             {
                 _cells[0, j].SetWalls(Up);
-                _cells[Height - 1, j].SetWalls(Down);
+                _cells[_height - 1, j].SetWalls(Down);
             }
 
         }
 
         public void TakePlayer(Player player, int column, int row)
         {
-            if (column < 0 || column >= Width || row < 0 || row >= Height)
+            if (column < 0 || column >= _width || row < 0 || row >= _height)
             {
-                throw new MapException($"position of player (column:{column}, row:{row}) is out of map (width:{Width}, height:{Height})");
+                throw new MapException($"position of player (column:{column}, row:{row}) is out of map (width:{_width}, height:{_height})");
             }
 
             _player = player;
@@ -280,7 +280,7 @@ namespace Game
         {
             if (_height == 0 || _width == 0)
             {
-                throw new MapException($"map size is 0 ({_height}x{_width})");
+                throw new MapException($"one of the map dimention is of 0 size (width {_width} x height {_height})");
             }
 
             MapSymbol[,] res = new MapSymbol[(_height * 2) + 1, (_width * 2) + 1];
@@ -327,7 +327,7 @@ namespace Game
                         visualWallUp = MapSymbol.WallAbsentHorizontal;
                     }
 
-                    res[2 * i, (2 * j) + 1] = visualWallUp;
+                    res[i * 2, (j * 2) + 1] = visualWallUp;
 
                     MapSymbol visualWallLeft;
 
@@ -352,7 +352,7 @@ namespace Game
                         visualWallLeft = MapSymbol.WallAbsentVertical;
                     }
 
-                    res[(2 * i) + 1, 2 * j] = visualWallLeft;
+                    res[(i * 2) + 1, j * 2] = visualWallLeft;
 
                     MapSymbol visualCell;
 
@@ -373,7 +373,7 @@ namespace Game
                         visualCell = MapSymbol.Visited;
                     }
 
-                    res[(2 * i) + 1, (2 * j) + 1] = visualCell;
+                    res[(i * 2) + 1, (j * 2) + 1] = visualCell;
                 }
 
                 MapSymbol visualCrossEndLine = MapSymbol.CrossAbsent;
