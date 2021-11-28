@@ -8,6 +8,9 @@ namespace Game
         [Description("+")]
         CrossPresent,
 
+        [Description("+")]
+        CrossUnsertain,
+
         [Description(" ")]
         CrossAbsent,
 
@@ -16,6 +19,9 @@ namespace Game
 
         [Description("o")]
         Hole,
+
+        [Description("*")]
+        Start,
 
         [Description("|")]
         WallPresentVertical,

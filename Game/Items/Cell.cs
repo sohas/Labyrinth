@@ -16,6 +16,7 @@ namespace Game
         private bool _unvisited;
         private Hole _hole;
         private Player _player;
+        private bool _started;
 
         #endregion
 
@@ -26,6 +27,7 @@ namespace Game
         public bool Occupied => _player != null;
         public bool Unvisited => _unvisited;
         public Hole Hole => _hole;
+        public bool Started => _started;
 
         #endregion
 
@@ -133,6 +135,11 @@ namespace Game
         public void SetHole(Hole hole)
         {
             _hole = hole;
+        }
+
+        public void MarkStarted()
+        {
+            _started = true;
         }
 
         public void Occupy(Player player)

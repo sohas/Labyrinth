@@ -143,6 +143,7 @@ namespace Game
             {
                 _player = new Player();
                 _cells[playerRow, playerColumn].Occupy(_player);
+                _cells[playerRow, playerColumn].MarkStarted();
             }
             else
             {
@@ -191,7 +192,7 @@ namespace Game
 
         #region private methods
 
-        private static int CountsWallsAroundTheCross(int y, int x, MapSymbol[,] res)
+        private static MapSymbol GetCrossType(int y, int x, MapSymbol[,] res) 
         {
             MapSymbol current = res[y, x];
 
@@ -202,36 +203,55 @@ namespace Game
                 y < 0 ||
                 x >= resWidth ||
                 y >= resHeight ||
-                (current != MapSymbol.CrossPresent && current != MapSymbol.CrossAbsent))
+                (current != MapSymbol.CrossPresent && current != MapSymbol.CrossUnsertain && current != MapSymbol.CrossAbsent))
             {
-                return -1;
+                return current;
             }
-
-            int count = 4;
 
             MapSymbol wallLeft = x == 0 ? MapSymbol.WallAbsentHorizontal : res[y, x - 1];
             MapSymbol wallRight = x == resWidth - 1 ? MapSymbol.WallAbsentHorizontal : res[y, x + 1];
             MapSymbol wallUp = y == 0 ? MapSymbol.WallAbsentVertical : res[y - 1, x];
             MapSymbol wallDown = y == resHeight - 1 ? MapSymbol.WallAbsentVertical : res[y + 1, x];
 
-            if (wallLeft is MapSymbol.WallAbsentHorizontal or MapSymbol.WallUnsertainHorizontal)
+            bool unsertain = false;
+
+            if (wallLeft == MapSymbol.WallUnsertainHorizontal)
             {
-                count--;
+                unsertain = true;
             }
-            if (wallRight is MapSymbol.WallAbsentHorizontal or MapSymbol.WallUnsertainHorizontal)
+            else if (wallLeft != MapSymbol.WallAbsentHorizontal) 
             {
-                count--;
-            }
-            if (wallUp is MapSymbol.WallAbsentVertical or MapSymbol.WallUnsertainVertical)
-            {
-                count--;
-            }
-            if (wallDown is MapSymbol.WallAbsentVertical or MapSymbol.WallUnsertainVertical)
-            {
-                count--;
+                return MapSymbol.CrossPresent;
             }
 
-            return count;
+            if (wallRight == MapSymbol.WallUnsertainHorizontal)
+            {
+                unsertain = true;
+            }
+            else if (wallRight != MapSymbol.WallAbsentHorizontal)
+            {
+                return MapSymbol.CrossPresent;
+            }
+
+            if (wallUp == MapSymbol.WallUnsertainVertical)
+            {
+                unsertain = true;
+            }
+            else if (wallUp != MapSymbol.WallAbsentVertical)
+            {
+                return MapSymbol.CrossPresent;
+            }
+
+            if (wallDown == MapSymbol.WallUnsertainVertical)
+            {
+                unsertain = true;
+            }
+            else if (wallDown != MapSymbol.WallAbsentVertical)
+            {
+                return MapSymbol.CrossPresent;
+            }
+
+            return unsertain ? MapSymbol.CrossUnsertain : MapSymbol.CrossAbsent;
         }
 
         #endregion
@@ -275,6 +295,11 @@ namespace Game
         {
             _cells[row, column].SetHole(hole);
         }
+        
+        public void MarkStart(int column, int row)
+        {
+            _cells[row, column].MarkStarted();
+        }
 
         public MapSymbol[,] GetVisual()
         {
@@ -294,7 +319,7 @@ namespace Game
                     res[2 * i, 2 * j] = visualCrossLeftUp;
 
                     WallState wallUp, wallDown, wallLeft, wallRight;
-                    bool occupied, hole, unvisited;
+                    bool occupied, hole, unvisited, started;
 
                     wallUp = i == 0 ? _cells[i, j].Wall(Up) : _cells[i - 1, j].Wall(Down);
                     wallDown = _cells[i, j].Wall(Up);
@@ -303,6 +328,7 @@ namespace Game
                     occupied = _cells[i, j].Occupied;
                     hole = _cells[i, j].Hole != null;
                     unvisited = _cells[i, j].Unvisited;
+                    started = _cells[i, j].Started;
 
                     MapSymbol visualWallUp;
 
@@ -360,13 +386,17 @@ namespace Game
                     {
                         visualCell = MapSymbol.Unvisited;
                     }
+                    else if (occupied)
+                    {
+                        visualCell = MapSymbol.Player;
+                    }
                     else if (hole)
                     {
                         visualCell = MapSymbol.Hole;
                     }
-                    else if (occupied)
+                    else if (started)
                     {
-                        visualCell = MapSymbol.Player;
+                        visualCell = MapSymbol.Start;
                     }
                     else
                     {
@@ -418,10 +448,10 @@ namespace Game
             {
                 for (int j = 0; j <= 2 * _width; j++)
                 {
-                    if (CountsWallsAroundTheCross(i, j, res) > 1)
-                    {
-                        res[i, j] = MapSymbol.CrossPresent;
-                    }
+                    //if (CountsPresentWallsAroundTheCross(i, j, res) > 0)
+                    //{
+                        res[i, j] = GetCrossType(i, j, res);//   MapSymbol.CrossPresent;
+                    //}
                 }
             }
 

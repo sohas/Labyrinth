@@ -37,7 +37,7 @@ namespace Game
             Map map = new Map(directory + mapName);
             Explore explore = new Explore(map);
 
-            explore.Move();
+            //explore.Move();
         }
     }
 }

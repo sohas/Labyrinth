@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using static Game.Direction;
+using System.Threading;
 
 namespace Game
 {
@@ -9,13 +10,15 @@ namespace Game
         #region private fields
 
         private readonly Map _map;
-        public static readonly Dictionary<ConsoleKey, Direction> _keyDictionary;
+        private static readonly Dictionary<ConsoleKey, Direction> _keyDictionary;
+        private bool _holed;
 
         #endregion
 
         #region public properties
 
         public Map Map => _map;
+        public bool Holed => _holed;
         public static Dictionary<ConsoleKey, Direction> KeyDictionary => _keyDictionary;
 
         #endregion
@@ -49,6 +52,16 @@ namespace Game
             Cell currentCell = _map.Player.Cell;
             int column = currentCell.Column;
             int row = currentCell.Row;
+
+            if (_holed)
+            {
+                column = currentCell.Hole.ColumnTarget;
+                row = currentCell.Hole.RowTarget;
+                _map.Player.TakeCell(_map.Cells[row, column]);
+                _holed = false;
+                return Exploring.Holed;
+
+            }
 
             if (currentCell.Wall(direction) == WallState.Present)
             {
@@ -86,10 +99,9 @@ namespace Game
 
                 if (nextCell.Hole != null)
                 {
-                    column = nextCell.Hole.ColumnTarget;
-                    row = nextCell.Hole.RowTarget;
-                    _map.Player.TakeCell(_map.Cells[row, column]);
-                    return Exploring.Holed;
+                    _holed = true;
+                    _map.Player.TakeCell(nextCell);
+                    return Exploring.Passed;
                 }
                 else
                 {
@@ -99,7 +111,7 @@ namespace Game
             }
         }
 
-        public void Move()
+        public void ConsoleMove()
         {
 
             if (_map.Player == null)
