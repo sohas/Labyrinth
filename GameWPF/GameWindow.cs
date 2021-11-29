@@ -25,6 +25,7 @@ namespace GameWPF
         private Button[,] _elements;
         private int _counter;
         private readonly TabItem _mainTab;
+        private readonly Grid _grid;
 
         public GameWindow(Map basicMap)
         {
@@ -38,8 +39,8 @@ namespace GameWPF
             _mvWidth = mapVisual.GetLength(1);
             _elements = new Button[_mvHeight, _mvWidth];
             FillElementsFromMapVisual(mapVisual, ref _elements);
-            Grid grid = FillGridFromElements(_elements, BuildEmptyGrid(_mvHeight, _mvWidth));
-            _mainTab.Content = grid;
+            _grid = FillGridFromElements(_elements, BuildEmptyGrid(_mvHeight, _mvWidth));
+            _mainTab.Content = _grid;
         }
 
         private static Grid BuildEmptyGrid(int mvHeight, int mvWidth)
@@ -213,6 +214,9 @@ namespace GameWPF
                 Button[,] elements = new Button[_mvHeight, _mvWidth];
                 FillElementsFromMapVisual(lastMapVisual, ref elements, false);
                 newTab.Content = FillGridFromElements(elements, BuildEmptyGrid(_mvHeight, _mvWidth));
+                Items.Remove(_mainTab);
+                Items.Add(_mainTab);
+                SelectedItem = _mainTab;
             }
 
             FillElementsFromMapVisual(_explore.Map.GetVisual(), ref _elements, true);
