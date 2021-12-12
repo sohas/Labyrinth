@@ -22,7 +22,7 @@ namespace Game
 
         #region ctors
 
-        public Hole(int columnTarget, int rowTarget)
+        public Hole(int rowTarget, int columnTarget)
         {
             _columnTarget = columnTarget;
             _rowTarget = rowTarget;

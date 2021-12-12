@@ -20,12 +20,14 @@ namespace GameWPF
     public partial class GameWindow : TabControl
     {
         private readonly Explore _explore;
+        private readonly Guess _guess;
         private readonly int _mvHeight;
         private readonly int _mvWidth;
         private Button[,] _elements;
         private int _counter;
         private readonly TabItem _mainTab;
         private readonly Grid _grid;
+        private TabItem _guessTab;
 
         public GameWindow(Map basicMap)
         {
@@ -34,6 +36,7 @@ namespace GameWPF
             Items.Add(_mainTab);
             _mainTab.Header = basicMap.Name;
             _explore = new(basicMap);
+            _guess = new(basicMap);
             MapSymbol[,] mapVisual = _explore.Map.GetVisual();
             _mvHeight = mapVisual.GetLength(0);
             _mvWidth = mapVisual.GetLength(1);
@@ -86,11 +89,14 @@ namespace GameWPF
             return mapGrid;
         }
 
-        private void FillElementsFromMapVisual(MapSymbol[,] mapVisual, ref Button[,] elements, bool update = false)
+        private static void FillElementsFromMapVisual(MapSymbol[,] mapVisual, ref Button[,] elements, bool update = false)
         {
-            for (int i = 0; i < _mvHeight; i++)
+            int height = mapVisual.GetLength(0);
+            int width = mapVisual.GetLength(1);
+
+            for (int i = 0; i < height; i++)
             {
-                for (int j = 0; j < _mvWidth; j++)
+                for (int j = 0; j < width; j++)
                 {
                     if (!update)
                     {
@@ -167,11 +173,14 @@ namespace GameWPF
             }
         }
 
-        private Grid FillGridFromElements(UIElement[,] elements, Grid grid)
+        private static Grid FillGridFromElements(UIElement[,] elements, Grid grid)
         {
-            for (int i = 0; i < _mvHeight; i++)
+            int height = elements.GetLength(0);
+            int width = elements.GetLength(1);
+
+            for (int i = 0; i < height; i++)
             {
-                for (int j = 0; j < _mvWidth; j++)
+                for (int j = 0; j < width; j++)
                 {
                     UIElement element = elements[i, j];
                     grid.Children.Add(element);
@@ -180,6 +189,23 @@ namespace GameWPF
                 }
             }
             return grid;
+        }
+
+        private void TryDrawMap() 
+        {
+            if (_guessTab == null)
+            {
+                _guessTab = new() { Header = _guess.Map.Name };
+                Items.Add(_guessTab);
+                MapSymbol[,] guessMapVisual = _guess.Map.GetVisual();
+                int guessVisualHeight = _guess.MapVisual.GetLength(0);
+                int guessVisualWidth = _guess.MapVisual.GetLength(1);
+                Button[,] guessElements = new Button[guessVisualHeight, guessVisualWidth];
+                FillElementsFromMapVisual(guessMapVisual, ref guessElements, false);
+                _guessTab.Content = FillGridFromElements(guessElements, BuildEmptyGrid(guessVisualHeight, guessVisualWidth));
+            }
+
+            SelectedItem = _guessTab;
         }
 
         public void ArrowAction(object sender, RoutedEventArgs eventArgs)
@@ -198,6 +224,12 @@ namespace GameWPF
                 case Key.Down:
                     _explore.Step(Direction.Down);
                     break;
+                case Key.Multiply:
+                    TryDrawMap();
+                    break;
+                case Key.Back:
+                    SelectedItem = _mainTab;
+                    break;
                 default:
                     break;
             }
@@ -215,7 +247,15 @@ namespace GameWPF
                 FillElementsFromMapVisual(lastMapVisual, ref elements, false);
                 newTab.Content = FillGridFromElements(elements, BuildEmptyGrid(_mvHeight, _mvWidth));
                 Items.Remove(_mainTab);
+                if (_guessTab != null) 
+                {
+                    Items.Remove(_guessTab);
+                }
                 Items.Add(_mainTab);
+                if (_guessTab != null)
+                {
+                    Items.Add(_guessTab);
+                }
                 SelectedItem = _mainTab;
             }
 

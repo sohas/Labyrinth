@@ -26,28 +26,16 @@ namespace Game
             _counter = 1;
             _exploredMaps = new List<Map>();
             _walk = new Walk(basicMap);
-            _exploringMap = new Map($"{basicMap.Name} explore {_counter}", (basicMap.Width * 2) - 1, (basicMap.Height * 2) - 1, true);
+            _exploringMap = new Map($"{basicMap.Name} explore {_counter}", (basicMap.Height * 2) - 1, (basicMap.Width * 2) - 1, true);
             _player = new Player();
-            _exploringMap.TakePlayer(_player, basicMap.Width - 1, basicMap.Height - 1);
-            _exploringMap.MarkStart(basicMap.Width - 1, basicMap.Height - 1);
+            _exploringMap.TakePlayer(_player, basicMap.Height - 1, basicMap.Width - 1);
+            _exploringMap.MarkStart(basicMap.Height - 1, basicMap.Width - 1);
         }
 
         #endregion
 
 
         #region private methods
-
-        private static Direction TakeOpposite(Direction direction)
-        {
-            return direction switch
-            {
-                Left => Right,
-                Right => Left,
-                Up => Down,
-                Down => Up,
-                _ => throw new NotImplementedException(),
-            };
-        }
 
         #endregion
 
@@ -100,10 +88,10 @@ namespace Game
                     _exploredMaps.Add(_exploringMap);
                     _counter++;
                     Map map = _walk.Map;
-                    _exploringMap = new Map($"{map.Name} explore {_counter}", (map.Width * 2) - 1, (map.Height * 2) - 1, true);
+                    _exploringMap = new Map($"{map.Name} explore {_counter}", (map.Height * 2) - 1, (map.Width * 2) - 1, true);
                     _player = new Player();
-                    _exploringMap.TakePlayer(_player, map.Width - 1, map.Height - 1);
-                    _exploringMap.MarkStart(map.Width - 1, map.Height - 1);
+                    _exploringMap.TakePlayer(_player, map.Height - 1, map.Width - 1);
+                    _exploringMap.MarkStart(map.Height - 1, map.Width - 1);
                     return;
 
                 case Exploring.Empty:

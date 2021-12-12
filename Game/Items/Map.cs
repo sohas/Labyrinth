@@ -32,7 +32,7 @@ namespace Game
 
 
         #region ctors
-        public Map(string name, int width, int height, bool allUnvisited = false)
+        public Map(string name, int height, int width, bool allUnvisited = false, bool allWallsAbsent = false)
         {
             _name = name;
             _width = width;
@@ -42,7 +42,7 @@ namespace Game
             {
                 for (int j = 0; j < width; j++)
                 {
-                    _cells[i, j] = new Cell(j, i, allUnvisited);
+                    _cells[i, j] = new Cell(i, j, allUnvisited, allWallsAbsent);
                 }
             }
         }
@@ -112,7 +112,7 @@ namespace Game
                 for (int j = 0; j < width; j++)
                 {
                     _cells[i, j] = dict.ContainsKey(row[j]) ?
-                        new Cell(j, i, dict[row[j]]) :
+                        new Cell(i, j, dict[row[j]]) :
                         throw new MapException($"line of map descripion ({row}) has wrong format. " +
                             $"it must consist of {width} symbols described in lines 3-18)");
                 }
@@ -176,13 +176,64 @@ namespace Game
                         columnTarget >= 0 && columnTarget < width &&
                         rowTarget >= 0 && rowTarget < height)
                     {
-                        _cells[rowStart, columnStart].SetHole(new Hole(columnTarget, rowTarget));
+                        _cells[rowStart, columnStart].SetHole(new Hole(rowTarget, columnTarget));
                     }
                     else
                     {
                         throw new MapException($"in this line ({i}) must be 4 positive digits (or 0), devided by comma: " +
                             $"column start, row start, column target, row target. column must be < {width}, row must be < {height}");
                     }
+                }
+            }
+        }
+
+        public Map(MapSymbol[,] symbols) //////////////////////////////// не используется
+        {
+            var h = symbols.GetLength(0);
+            var w = symbols.GetLength(1);
+            if (h % 2 != 1 || w % 2 != 1) 
+            {
+                throw new MapException($"wrong symbols size {h} {w}. they both must be odd and >=3");
+            }
+
+            _height = (h - 1) / 2;
+            _width = (w - 1) / 2;
+            _cells = new Cell[_height, _width];
+
+            for (int i = 0; i < _height; i++)
+            {
+                for (int j = 0; j < _width; j++)
+                {
+                    var cellSymbol = symbols[2 * i + 1, 2 * j + 1];
+                    var wallLSymbol = j == 0 ? MapSymbol.WallPresentVertical : symbols[2 * i + 1, 2 * j];
+                    var wallRSymbol = j == _width - 1 ? MapSymbol.WallPresentVertical : symbols[2 * i + 1, 2 * j + 2];
+                    var wallUSymbol = i == 0 ? MapSymbol.WallPresentHorizontal : symbols[2 * i, 2 * j + 1];
+                    var wallDSymbol = i == _height - 1 ? MapSymbol.WallPresentVertical : symbols[2 * i + 2, 2 * j + 1];
+
+                    var cell = new Cell(i, j);
+
+                    if (cellSymbol == MapSymbol.Hole) 
+                    {
+                        cell.SetHole(new Hole(0, 0)); ///////////////////////////////////////////////////////
+                    }
+                    if (wallLSymbol == MapSymbol.WallPresentVertical || wallLSymbol == MapSymbol.DiodeRight)
+                    {
+                        cell.SetWalls(Left);
+                    }
+                    if (wallRSymbol == MapSymbol.WallPresentVertical || wallRSymbol == MapSymbol.DiodeLeft)
+                    {
+                        cell.SetWalls(Right);
+                    }
+                    if (wallUSymbol == MapSymbol.WallPresentHorizontal || wallUSymbol == MapSymbol.DiodeDown)
+                    {
+                        cell.SetWalls(Up);
+                    }
+                    if (wallDSymbol == MapSymbol.WallPresentHorizontal || wallDSymbol == MapSymbol.DiodeUp)
+                    {
+                        cell.SetWalls(Down);
+                    }
+
+                    _cells[i, j] = cell;
                 }
             }
         }
@@ -274,11 +325,11 @@ namespace Game
 
         }
 
-        public void TakePlayer(Player player, int column, int row)
+        public void TakePlayer(Player player, int row, int column)
         {
-            if (column < 0 || column >= _width || row < 0 || row >= _height)
+            if (row < 0 || row >= _height || column < 0 || column >= _width)
             {
-                throw new MapException($"position of player (column:{column}, row:{row}) is out of map (width:{_width}, height:{_height})");
+                throw new MapException($"position of player (row:{row}, column:{column}) is out of map (height:{_height}, width:{_width})");
             }
 
             _player = player;
@@ -291,12 +342,12 @@ namespace Game
             _player = null;
         }
 
-        public void TakeHole(int column, int row, Hole hole)
+        public void TakeHole(int row, int column, Hole hole)
         {
             _cells[row, column].SetHole(hole);
         }
         
-        public void MarkStart(int column, int row)
+        public void MarkStart(int row, int column)
         {
             _cells[row, column].MarkStarted();
         }
@@ -448,14 +499,32 @@ namespace Game
             {
                 for (int j = 0; j <= 2 * _width; j++)
                 {
-                    //if (CountsPresentWallsAroundTheCross(i, j, res) > 0)
-                    //{
-                        res[i, j] = GetCrossType(i, j, res);//   MapSymbol.CrossPresent;
-                    //}
+                    res[i, j] = GetCrossType(i, j, res);
                 }
             }
 
             return res;
+        }
+
+        public static bool CheckEquity(Map first, Map second, Func<Cell, Cell, bool> cellEquityKind)
+        {
+            if (first.Height != second.Height || first.Width != second.Width)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < first.Height; i++)
+            {
+                for (int j = 0; j < first.Width; j++)
+                {
+                    if (!cellEquityKind(first.Cells[i, j], second.Cells[i, j]))
+                    {
+                        return false;
+                    };
+                }
+            }
+
+            return true;
         }
 
         public override string ToString()
@@ -480,7 +549,7 @@ namespace Game
             return res.ToString();
         }
 
-        public void PrintMap(string comment = null)
+        public void PrintMap(string comment = null)//Console Method
         {
             if (comment != null)
             {

@@ -33,15 +33,19 @@ namespace Game
 
         #region ctors
 
-        public Cell(int column, int row, bool unvisited = false, params Direction[] directions)
+        public Cell(int row, int column, bool unvisited = false, bool allWallsAbsent = false, params Direction[] directions)
         {
             _column = column;
             _row = row;
             _unvisited = unvisited;
             SetWalls(directions);
+            if (allWallsAbsent) 
+            {
+                BreakWalls(Left, Right, Up, Down);
+            }
         }
 
-        public Cell(int column, int row, string walls)
+        public Cell(int row, int column, string walls)
         {
             _column = column;
             _row = row;
@@ -156,6 +160,54 @@ namespace Game
         public void Leave()
         {
             _player = null;
+        }
+
+        public static bool StrongEquity(Cell first, Cell second)
+        {
+            return
+                first._column == second._column &&
+                first._row == second.Row &&
+                first._wallL == second._wallL &&
+                first._wallR == second._wallR &&
+                first._wallU == second._wallU &&
+                first._wallD == second._wallD &&
+                first._unvisited == second._unvisited &&
+                (
+                    (first._hole == null && second.Hole == null) ||
+                    (
+                        first._hole != null &&
+                        second._hole != null &&
+                        first._hole.ColumnTarget == second._hole.ColumnTarget &&
+                        first._hole.RowTarget == second._hole.RowTarget
+                     )
+                ) &&
+                first._player.Cell.Column == second._player.Cell.Column &&
+                first._started == second._started &&
+                true;
+        }
+
+        public static bool SoftEquity(Cell first, Cell second)
+        {
+            return
+                //first._column == second._column &&
+                //first._row == second.Row &&
+                first._wallL == second._wallL &&
+                first._wallR == second._wallR &&
+                first._wallU == second._wallU &&
+                first._wallD == second._wallD &&
+                //first._unvisited == second._unvisited &&
+                (
+                    (first._hole == null && second.Hole == null) ||
+                    (
+                        first._hole != null &&
+                        second._hole != null &&
+                        first._hole.ColumnTarget == second._hole.ColumnTarget &&
+                        first._hole.RowTarget == second._hole.RowTarget
+                     )
+                ) &&
+                //first._player.Cell.Column == second._player.Cell.Column &&
+                //first._started == second._started &&
+                true;
         }
 
         #endregion
