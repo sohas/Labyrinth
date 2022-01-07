@@ -23,7 +23,6 @@ namespace Game
 
         #endregion
 
-
         #region ctors
 
         static Walk()
@@ -43,7 +42,6 @@ namespace Game
         }
 
         #endregion
-
 
         #region public methods
 

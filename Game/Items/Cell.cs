@@ -188,14 +188,11 @@ namespace Game
 
         public static bool SoftEquity(Cell first, Cell second)
         {
-            return
-                //first._column == second._column &&
-                //first._row == second.Row &&
+            var res =
                 first._wallL == second._wallL &&
                 first._wallR == second._wallR &&
                 first._wallU == second._wallU &&
                 first._wallD == second._wallD &&
-                //first._unvisited == second._unvisited &&
                 (
                     (first._hole == null && second.Hole == null) ||
                     (
@@ -205,9 +202,9 @@ namespace Game
                         first._hole.RowTarget == second._hole.RowTarget
                      )
                 ) &&
-                //first._player.Cell.Column == second._player.Cell.Column &&
-                //first._started == second._started &&
                 true;
+
+            return res;
         }
 
         #endregion

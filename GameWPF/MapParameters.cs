@@ -12,7 +12,7 @@ namespace GameWPF
     {
         internal static Brush wallColor = new SolidColorBrush(Color.FromArgb(255, 255, 255, 255));
         internal static Brush playerColor = new SolidColorBrush(Color.FromArgb(255, 20, 200, 100));
-        internal static Brush startColor = new SolidColorBrush(Color.FromArgb(255, 200, 20, 100));
+        internal static Brush startColor = new SolidColorBrush(Color.FromArgb(255, 200, 20, 50));
         internal static Brush unvisitedColor = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0));
         internal static Brush visitedColor = new SolidColorBrush(Color.FromArgb(255, 50, 50, 50));
         internal static int wallSize = 2;

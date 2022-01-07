@@ -19,32 +19,120 @@ namespace GameWPF
 {
     public partial class GameWindow : TabControl
     {
+        #region private fields
+
+        private readonly int _mapHeight;
+        private readonly int _mapWidth;
+
         private readonly Explore _explore;
+        private readonly Button[,] _exploringElements;
+        private readonly Grid _exploringGrid;
+        private readonly StackPanel _exploringStackPanel;
+        private readonly TabItem _exploringTab;
+
         private readonly Guess _guess;
-        private readonly int _mvHeight;
-        private readonly int _mvWidth;
-        private Button[,] _elements;
+        private readonly Button[,] _guessElements;
+        private readonly Grid _guessGrid;
+        private readonly StackPanel _guessStackPanel;
+        private readonly TabItem _guessTab;
+
+        private readonly TextBox _exploringKeys;
+        private readonly TextBox _guessKeys;
+        private readonly TextBox _guessAlert;
+        private readonly TextBox _guessWin;
+
+        private int _holeRow;
+        private int _holeColumn;
+        private int _holeTargetRow;
+        private int _holeTargetColumn;
+        private bool _defineHoLe;
+
         private int _counter;
-        private readonly TabItem _mainTab;
-        private readonly Grid _grid;
-        private TabItem _guessTab;
+
+        #endregion
+
+        #region ctor
 
         public GameWindow(Map basicMap)
         {
-            Background = MapParameters.unvisitedColor;
-            _mainTab = new();
-            Items.Add(_mainTab);
-            _mainTab.Header = basicMap.Name;
+            _mapHeight = basicMap.Height;
+            _mapWidth = basicMap.Width;
+
             _explore = new(basicMap);
+            _exploringElements = new Button[(_mapHeight * 4) - 1, (_mapWidth * 4) - 1];
+            FillElementsFromMapVisual(_explore.MapVisual, _exploringElements);
+            _exploringGrid = FillGridFromElements(_exploringElements, BuildEmptyGrid((_mapHeight * 4) - 1, (_mapWidth * 4) - 1));
+            _exploringTab = new() { Header = basicMap.Name };
+
+            _exploringKeys = new()
+            {
+                Text = "Arrows to move, * to guess",
+                FontSize = MapParameters.cellSize * 2,
+                Height = MapParameters.cellSize * 4,
+                Width = _exploringGrid.Width,
+                TextAlignment = TextAlignment.Center,
+                FontStretch = FontStretches.Expanded,
+            };
+
+            _exploringStackPanel = new() { Width = _exploringGrid.Width, Height = _exploringGrid.Height + _exploringKeys.Height };
+            _exploringTab.Content = _exploringStackPanel;
+            _exploringStackPanel.Children.Add(_exploringKeys);
+            _exploringStackPanel.Children.Add(_exploringGrid);
+            Items.Add(_exploringTab);
+
             _guess = new(basicMap);
-            MapSymbol[,] mapVisual = _explore.Map.GetVisual();
-            _mvHeight = mapVisual.GetLength(0);
-            _mvWidth = mapVisual.GetLength(1);
-            _elements = new Button[_mvHeight, _mvWidth];
-            FillElementsFromMapVisual(mapVisual, ref _elements);
-            _grid = FillGridFromElements(_elements, BuildEmptyGrid(_mvHeight, _mvWidth));
-            _mainTab.Content = _grid;
+            _guessElements = new Button[(_mapHeight * 2) + 1, (_mapWidth * 2) + 1];
+            FillElementsFromMapVisual(_guess.MapVisual, _guessElements, false, true);
+            _guessGrid = FillGridFromElements(_guessElements, BuildEmptyGrid((_mapHeight * 2) + 1, (_mapWidth * 2) + 1));
+            _guessTab = new() { Header = _guess.Map.Name };
+
+            _guessKeys = new()
+            {
+                Text = "Backspase to explore",
+                FontSize = MapParameters.cellSize * 2,
+                Height = MapParameters.cellSize * 4,
+                Width = _guessGrid.Width,
+                TextAlignment = TextAlignment.Center,
+                FontStretch = FontStretches.Expanded,
+            };
+
+            _guessStackPanel = new() { Width = _guessGrid.Width, Height = _guessGrid.Height + _guessKeys.Height };
+            _guessTab.Content = _guessStackPanel;
+            _guessStackPanel.Children.Add(_guessKeys);
+            _guessStackPanel.Children.Add(_guessGrid);
+
+            _guessAlert = new()
+            {
+                Text = "Choose Target",
+                FontSize = MapParameters.cellSize * 2,
+                Height = MapParameters.cellSize * 4,
+                Width = _guessGrid.Width,
+                TextAlignment = TextAlignment.Center,
+                FontStretch = FontStretches.Expanded,
+            };
+
+            _guessWin = new()
+            {
+                Text = "You Win!",
+                FontSize = MapParameters.cellSize * 2,
+                Height = MapParameters.cellSize * 4,
+                Width = _guessGrid.Width,
+                TextAlignment = TextAlignment.Center,
+                FontStretch = FontStretches.Expanded,
+            };
+
+            _holeRow = -1;
+            _holeColumn = -1;
+            _holeTargetRow = -1;
+            _holeTargetColumn = -1;
+            _defineHoLe = false;
+
+            Background = MapParameters.unvisitedColor;
         }
+
+        #endregion
+
+        #region private methods
 
         private static Grid BuildEmptyGrid(int mvHeight, int mvWidth)
         {
@@ -89,29 +177,121 @@ namespace GameWPF
             return mapGrid;
         }
 
-        private static void FillElementsFromMapVisual(MapSymbol[,] mapVisual, ref Button[,] elements, bool update = false)
+        private MapSymbol GetNewSymbol(MapSymbol symbol) 
         {
-            int height = mapVisual.GetLength(0);
-            int width = mapVisual.GetLength(1);
-
-            for (int i = 0; i < height; i++)
+            switch (symbol) 
             {
-                for (int j = 0; j < width; j++)
-                {
-                    if (!update)
+                case MapSymbol.WallAbsentVertical:
+                    return MapSymbol.WallPresentVertical;
+                case MapSymbol.WallPresentVertical:
+                    return MapSymbol.DiodeLeft;
+                case MapSymbol.DiodeLeft:
+                    return MapSymbol.DiodeRight;
+                case MapSymbol.DiodeRight:
+                    return MapSymbol.WallAbsentVertical;
+                case MapSymbol.WallAbsentHorizontal:
+                    return MapSymbol.WallPresentHorizontal;
+                case MapSymbol.WallPresentHorizontal:
+                    return MapSymbol.DiodeUp;
+                case MapSymbol.DiodeUp:
+                    return MapSymbol.DiodeDown;
+                case MapSymbol.DiodeDown:
+                    return MapSymbol.WallAbsentHorizontal;
+                case MapSymbol.Visited:
+                    if (_defineHoLe)
                     {
-                        elements[i, j] = new Button() { BorderThickness = new Thickness(0, 0, 0, 0)};
+                        return symbol;
                     }
-
-                    UpdateButtonFromSymbol(mapVisual[i, j], ref elements[i, j]);
-                }
+                    else 
+                    {
+                        return MapSymbol.Hole;
+                    }
+                case MapSymbol.Hole:
+                    return MapSymbol.Visited;
+                default:
+                    return symbol;
             }
         }
 
-        private static void UpdateButtonFromSymbol(MapSymbol symbol, ref Button button)
+        private void ClickWall(object sender, RoutedEventArgs args)
+        {
+            Button button = sender as Button;
+            int row = Grid.GetRow(button);
+            int column = Grid.GetColumn(button);
+
+            if (_defineHoLe)
+            {
+                if (row % 2 == 1 && column % 2 == 1)
+                {
+                    _holeTargetRow = (row - 1) / 2;
+                    _holeTargetColumn = (column - 1) / 2;
+                    _guess.SetHoleTarget(_holeRow, _holeColumn, _holeTargetRow, _holeTargetColumn); 
+                    _defineHoLe = false;
+
+                    Background = MapParameters.unvisitedColor;
+                    _guessStackPanel.Children.Remove(_guessAlert);
+                    _guessStackPanel.Height -= _guessAlert.Height;
+
+                    if (_guess.Equity) 
+                    {
+                        Win();
+                    }
+
+                    return;
+                }
+                else 
+                {
+                    return;
+                }
+            }
+
+            if (
+                (row % 2 == 0 && column % 2 == 0) ||
+                row == 0 ||
+                row == _mapHeight * 2 ||
+                column == 0 ||
+                column == _mapWidth * 2 ||
+                false
+                )
+            {
+                return;
+            }
+
+            MapSymbol newSymbol = GetNewSymbol(_guess.MapVisual[row, column]);
+            _guess.ChangeMapFromMapVisualSymbol(row, column, newSymbol);
+
+            if (newSymbol == MapSymbol.Hole)
+            {
+                _defineHoLe = true;
+                _holeRow = (row - 1) / 2;
+                _holeColumn = (column - 1) / 2;
+
+                Background = MapParameters.startColor;
+                _guessStackPanel.Children.Add(_guessAlert);
+                _guessStackPanel.Height += _guessAlert.Height;
+            }
+            
+            FillElementsFromMapVisual(_guess.MapVisual, _guessElements, true, false);
+
+            if (!_defineHoLe && _guess.Equity)
+            {
+                Win();
+            }
+        }
+
+        private void Win() 
+        {
+            Background = MapParameters.playerColor;
+            _guessStackPanel.Children.Remove(_guessKeys);
+            _guessStackPanel.Height -= _guessKeys.Height;
+            _guessStackPanel.Children.Add(_guessWin);
+            _guessStackPanel.Height += _guessWin.Height;
+        }
+
+        private void UpdateButtonFromSymbol(MapSymbol symbol, Button button, bool isGuess = false)
         {
             button.Background = MapParameters.GetColor(symbol);
-
+            button.Content = null;
             Ellipse ellipse = new();
 
             if (symbol == MapSymbol.Player)
@@ -167,13 +347,33 @@ namespace GameWPF
                 ellipse.VerticalAlignment = VerticalAlignment.Bottom;
                 button.Content = ellipse;
             }
-            else
+
+            if (isGuess)
             {
-                button.Content = null;
+                button.Click += ClickWall;
             }
         }
 
-        private static Grid FillGridFromElements(UIElement[,] elements, Grid grid)
+        private void FillElementsFromMapVisual(MapSymbol[,] mapVisual, Button[,] elements, bool update = false, bool isGuess = false)
+        {
+            int height = mapVisual.GetLength(0);
+            int width = mapVisual.GetLength(1);
+
+            for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j++)
+                {
+                    if (!update)
+                    {
+                        elements[i, j] = new Button() { BorderThickness = new Thickness(0, 0, 0, 0) };
+                    }
+
+                    UpdateButtonFromSymbol(mapVisual[i, j], elements[i, j], isGuess);
+                }
+            }
+        }
+
+        private Grid FillGridFromElements(UIElement[,] elements, Grid grid)
         {
             int height = elements.GetLength(0);
             int width = elements.GetLength(1);
@@ -193,22 +393,18 @@ namespace GameWPF
 
         private void TryDrawMap() 
         {
-            if (_guessTab == null)
+            if (!Items.Contains(_guessTab))
             {
-                _guessTab = new() { Header = _guess.Map.Name };
                 Items.Add(_guessTab);
-                MapSymbol[,] guessMapVisual = _guess.Map.GetVisual();
-                int guessVisualHeight = _guess.MapVisual.GetLength(0);
-                int guessVisualWidth = _guess.MapVisual.GetLength(1);
-                Button[,] guessElements = new Button[guessVisualHeight, guessVisualWidth];
-                FillElementsFromMapVisual(guessMapVisual, ref guessElements, false);
-                _guessTab.Content = FillGridFromElements(guessElements, BuildEmptyGrid(guessVisualHeight, guessVisualWidth));
             }
-
             SelectedItem = _guessTab;
         }
 
-        public void ArrowAction(object sender, RoutedEventArgs eventArgs)
+        #endregion
+
+        #region internal methods
+
+        internal void KeyAction(object sender, RoutedEventArgs eventArgs)
         {
             switch (((KeyEventArgs)eventArgs).Key)
             {
@@ -228,7 +424,7 @@ namespace GameWPF
                     TryDrawMap();
                     break;
                 case Key.Back:
-                    SelectedItem = _mainTab;
+                    SelectedItem = _exploringTab;
                     break;
                 default:
                     break;
@@ -239,27 +435,39 @@ namespace GameWPF
             if (exploredMaps.Count != _counter)
             {
                 _counter++;
+
                 Map lastMap = _explore.ExploredMaps.Last();
-                TabItem newTab = new() { Header = lastMap.Name };
-                Items.Add(newTab);
                 MapSymbol[,] lastMapVisual = lastMap.GetVisual();
-                Button[,] elements = new Button[_mvHeight, _mvWidth];
-                FillElementsFromMapVisual(lastMapVisual, ref elements, false);
-                newTab.Content = FillGridFromElements(elements, BuildEmptyGrid(_mvHeight, _mvWidth));
-                Items.Remove(_mainTab);
-                if (_guessTab != null) 
+                Button[,] elements = new Button[(_mapHeight * 4) - 1, (_mapWidth * 4) - 1];
+                FillElementsFromMapVisual(lastMapVisual, elements, false);
+
+                TabItem newTab = new() { Header = lastMap.Name };
+                newTab.Content = FillGridFromElements(elements, BuildEmptyGrid((_mapHeight * 4) - 1, (_mapWidth * 4) - 1));
+                Items.Add(newTab);
+                
+                Items.Remove(_exploringTab);
+
+                bool guessPresent = false;
+
+                if (Items.Contains(_guessTab)) 
                 {
                     Items.Remove(_guessTab);
+                    guessPresent = true;
                 }
-                Items.Add(_mainTab);
-                if (_guessTab != null)
+                
+                Items.Add(_exploringTab);
+                
+                if (guessPresent)
                 {
                     Items.Add(_guessTab);
                 }
-                SelectedItem = _mainTab;
+                
+                SelectedItem = _exploringTab;
             }
 
-            FillElementsFromMapVisual(_explore.Map.GetVisual(), ref _elements, true);
+            FillElementsFromMapVisual(_explore.Map.GetVisual(), _exploringElements, true);
         }
+
+        #endregion
     }
 }

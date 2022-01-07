@@ -19,7 +19,6 @@ namespace Game
 
         #endregion
 
-
         #region public properties
 
         public string Name => _name;
@@ -29,7 +28,6 @@ namespace Game
         public Player Player => _player;
 
         #endregion
-
 
         #region ctors
         public Map(string name, int height, int width, bool allUnvisited = false, bool allWallsAbsent = false)
@@ -240,7 +238,6 @@ namespace Game
 
         #endregion
 
-
         #region private methods
 
         private static MapSymbol GetCrossType(int y, int x, MapSymbol[,] res) 
@@ -306,7 +303,6 @@ namespace Game
         }
 
         #endregion
-
 
         #region public methods
 

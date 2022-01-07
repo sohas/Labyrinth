@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using static Game.Direction;
 
 namespace Game
@@ -16,8 +17,13 @@ namespace Game
 
         #endregion
 
+        #region public properties
+
         public Map Map => _exploringMap;
         public List<Map> ExploredMaps => _exploredMaps;
+        public MapSymbol[,] MapVisual => _exploringMap.GetVisual();
+
+        #endregion
 
         #region ctors
 
@@ -34,11 +40,9 @@ namespace Game
 
         #endregion
 
-
         #region private methods
 
         #endregion
-
 
         #region public methods
 

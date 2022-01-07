@@ -27,7 +27,7 @@ namespace GameWPF
             Map map = new(directory + mapName);
             GameWindow gameWindow = new(map);
             Content = gameWindow;
-            AddHandler(KeyDownEvent, new RoutedEventHandler(gameWindow.ArrowAction));
+            AddHandler(KeyDownEvent, new RoutedEventHandler(gameWindow.KeyAction));
             InitializeComponent();
         }
     }

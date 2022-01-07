@@ -11,14 +11,12 @@ namespace Game
 
         #endregion
 
-
         #region public properties
 
         public int ColumnTarget => _columnTarget;
         public int RowTarget => _rowTarget;
 
         #endregion
-
 
         #region ctors
 
