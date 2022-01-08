@@ -1,8 +1,10 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 
 
 namespace Game
 {
+    [Serializable]
     public enum MapSymbol
     {
         [Description("+")]

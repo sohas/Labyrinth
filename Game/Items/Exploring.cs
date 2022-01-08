@@ -3,6 +3,7 @@ using System.ComponentModel;
 
 namespace Game
 {
+    [Serializable]
     public enum Exploring
     {
         [Description("nobody in the labyrinth")]

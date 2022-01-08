@@ -2,6 +2,7 @@
 
 namespace Game
 {
+    [Serializable]
     public enum Direction
     {
         Left = 0,

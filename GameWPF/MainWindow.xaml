@@ -6,4 +6,8 @@
         xmlns:local="clr-namespace:GameWPF"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
- </Window>
+
+</Window>
+
+
+

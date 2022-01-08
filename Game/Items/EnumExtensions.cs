@@ -3,6 +3,7 @@ using System.ComponentModel;
 
 namespace Game
 {
+    [Serializable]
     public static class EnumExtensions
     {
         // This extension method is broken out so you can use a similar pattern with 

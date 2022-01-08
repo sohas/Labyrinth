@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using static Game.Direction;
 
 
 namespace Game
 {
+    [Serializable]
     public class Map
     {
         #region private fields
@@ -305,6 +307,11 @@ namespace Game
         #endregion
 
         #region public methods
+
+        public void Serialize(string filename) 
+        {
+
+        }
 
         public void MakePerimetr()
         {

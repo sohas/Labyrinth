@@ -1,8 +1,10 @@
 ﻿using System;
 using static Game.Direction;
 
+
 namespace Game
 {
+    [Serializable]
     public class Cell
     {
         #region private fields

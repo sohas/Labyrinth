@@ -2,6 +2,7 @@
 
 namespace Game
 {
+    [Serializable]
     public class Hole
     {
         #region private fields
