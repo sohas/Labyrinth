@@ -33,8 +33,10 @@ namespace GameWPF
         private readonly Guess _guess;
         private readonly Button[,] _guessElements;
         private readonly Grid _guessGrid;
+        private readonly Canvas _guessCanvas;
         private readonly StackPanel _guessStackPanel;
         private readonly TabItem _guessTab;
+        private readonly Dictionary<(int, int), Line> _holeLines;
 
         private readonly TextBox _exploringKeysTextBox;
         private readonly TextBox _guessKeysTextBox;
@@ -55,7 +57,6 @@ namespace GameWPF
 
         public GameWindow(Map basicMap)
         {
-            //Items.Clear();
             Name = "gameWindow";
 
             _mapHeight = basicMap.Height;
@@ -92,6 +93,8 @@ namespace GameWPF
             _guessElements = new Button[(_mapHeight * 2) + 1, (_mapWidth * 2) + 1];
             FillElementsFromMapVisual(_guess.MapVisual, _guessElements, false, true);
             _guessGrid = FillGridFromElements(_guessElements, BuildEmptyGrid((_mapHeight * 2) + 1, (_mapWidth * 2) + 1));
+            _guessCanvas = new() { IsHitTestVisible = false, Width = _guessGrid.Width, Height = _guessGrid.Height};
+            _guessGrid.Children.Add(_guessCanvas);
             _guessTab = new() { Header = _guess.Map.Name };
 
             _guessKeysTextBox = new()
@@ -113,6 +116,8 @@ namespace GameWPF
             _guessTab.Content = _guessStackPanel;
             _guessStackPanel.Children.Add(_guessKeysTextBox);
             _guessStackPanel.Children.Add(_guessGrid);
+            
+            _holeLines = new();
 
             _holeRow = -1;
             _holeColumn = -1;
@@ -217,32 +222,6 @@ namespace GameWPF
             int row = Grid.GetRow(button);
             int column = Grid.GetColumn(button);
 
-            if (_defineHoLe)
-            {
-                if (row % 2 == 1 && column % 2 == 1)
-                {
-                    _holeTargetRow = (row - 1) / 2;
-                    _holeTargetColumn = (column - 1) / 2;
-                    _guess.SetHoleTarget(_holeRow, _holeColumn, _holeTargetRow, _holeTargetColumn); 
-                    _defineHoLe = false;
-
-                    Background = MapParameters.unvisitedColor;
-                    _guessKeysTextBox.Background = MapParameters.unvisitedColor;
-                    _guessKeysTextBox.Text = "Click to change\nBackspase to explore";
-
-                    if (_guess.Equity) 
-                    {
-                        Win();
-                    }
-
-                    return;
-                }
-                else 
-                {
-                    return;
-                }
-            }
-
             if (
                 (row % 2 == 0 && column % 2 == 0) ||
                 row == 0 ||
@@ -253,6 +232,33 @@ namespace GameWPF
                 )
             {
                 return;
+            }
+
+            if (_defineHoLe)
+            {
+                if (row % 2 == 1 && column % 2 == 1)
+                {
+                    _holeTargetRow = (row - 1) / 2;
+                    _holeTargetColumn = (column - 1) / 2;
+                    _guess.SetHoleTarget(_holeRow, _holeColumn, _holeTargetRow, _holeTargetColumn);
+                    SetHoleLine(_holeRow, _holeColumn, _holeTargetRow, _holeTargetColumn);
+                    _defineHoLe = false;
+
+                    Background = MapParameters.unvisitedColor;
+                    _guessKeysTextBox.Background = MapParameters.unvisitedColor;
+                    _guessKeysTextBox.Text = "Click to change\nBackspase to explore";
+
+                    if (_guess.Equity)
+                    {
+                        Win();
+                    }
+
+                    return;
+                }
+                else
+                {
+                    return;
+                }
             }
 
             MapSymbol newSymbol = GetNewSymbol(_guess.MapVisual[row, column]);
@@ -268,6 +274,17 @@ namespace GameWPF
                 _guessKeysTextBox.Background = MapParameters.startColor;
                 _guessKeysTextBox.Text = "Chose target cell\nfor the hole";
             }
+            else 
+            {
+                _holeRow = (row - 1) / 2;
+                _holeColumn = (column - 1) / 2;
+
+                if (_holeLines.ContainsKey((_holeRow, _holeColumn)))
+                {
+                    Line line = _holeLines[(_holeRow, _holeColumn)];
+                    _guessCanvas.Children.Remove(line);
+                }
+            }
             
             FillElementsFromMapVisual(_guess.MapVisual, _guessElements, true, false);
 
@@ -275,6 +292,34 @@ namespace GameWPF
             {
                 Win();
             }
+        }
+
+        private void SetHoleLine(int holeRow, int holeColumn, int holeTargetRow, int holeTargetColumn) 
+        {
+            Brush brush = MapParameters.startColor.Clone();
+            brush.Opacity = 0.25;
+            Line line = new()
+            {
+                Focusable = false,
+                Stroke = brush,
+                StrokeThickness = MapParameters.cellSize * 1.75,
+                StrokeDashArray = new DoubleCollection(new List<double>() { 0.25, 0.25 }),
+            };
+            double kx = _guessCanvas.Width / (_mapWidth * (MapParameters.cellSize + MapParameters.wallSize) + MapParameters.wallSize);
+            double ky = _guessCanvas.Height / (_mapHeight * (MapParameters.cellSize + MapParameters.wallSize) + MapParameters.wallSize);
+            double x1 = kx * (holeColumn * (MapParameters.cellSize + MapParameters.wallSize) + MapParameters.wallSize + MapParameters.cellSize / 2.0);
+            double y1 = ky * (holeRow * (MapParameters.cellSize + MapParameters.wallSize) + MapParameters.wallSize + MapParameters.cellSize / 2.0);
+            double x2 = kx * (holeTargetColumn * (MapParameters.cellSize + MapParameters.wallSize) + MapParameters.wallSize + MapParameters.cellSize / 2.0);
+            double y2 = ky * (holeTargetRow * (MapParameters.cellSize + MapParameters.wallSize) + MapParameters.wallSize + MapParameters.cellSize / 2.0);
+
+            line.X1 = x1;
+            line.Y1 = y1;
+            line.X2 = x2;
+            line.Y2 = y2;
+
+            _holeLines[(holeRow, holeColumn)] = line;
+
+            _guessCanvas.Children.Add(line);
         }
 
         private void Win() 

@@ -50,7 +50,7 @@ namespace GameWPF
             string[] files = Directory.GetFiles(MapDir);
             List<string> maps = files.Select(x => x[(MapDir.Length + 1)..]).ToList();
 
-            foreach (var map in maps)
+            foreach (string map in maps)
             {
                 MenuItem mi = new() { Header = map, Name = map };
                 mi.Click += ChooseMapName;
