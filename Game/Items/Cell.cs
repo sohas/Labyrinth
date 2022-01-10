@@ -190,7 +190,7 @@ namespace Game
 
         public static bool SoftEquity(Cell first, Cell second)
         {
-            var res =
+            bool res =
                 first._wallL == second._wallL &&
                 first._wallR == second._wallR &&
                 first._wallU == second._wallU &&

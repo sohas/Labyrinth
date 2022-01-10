@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Game.Direction;
+﻿using static Game.Direction;
 
 namespace Game
 {
@@ -66,8 +61,8 @@ namespace Game
 
             if (y % 2 == 0)
             {
-                var cellUp = y == 0 ? new Cell(-1, -1) : _map.Cells[y / 2 - 1, (x - 1) / 2];
-                var cellDown = y == _height * 2 ? new Cell(-1, -1) : _map.Cells[y / 2, (x - 1) / 2];
+                Cell cellUp = y == 0 ? new Cell(-1, -1) : _map.Cells[y / 2 - 1, (x - 1) / 2];
+                Cell cellDown = y == _height * 2 ? new Cell(-1, -1) : _map.Cells[y / 2, (x - 1) / 2];
 
                 if (symbol == MapSymbol.WallPresentHorizontal)
                 {
@@ -95,8 +90,8 @@ namespace Game
 
             if (x % 2 == 0)
             {
-                var cellLeft = x == 0 ? new Cell(-1, -1) : _map.Cells[(y - 1) / 2, x / 2 - 1];
-                var cellRight = x == _width * 2 ? new Cell(-1, -1) : _map.Cells[(y - 1) / 2, x / 2];
+                Cell cellLeft = x == 0 ? new Cell(-1, -1) : _map.Cells[(y - 1) / 2, x / 2 - 1];
+                Cell cellRight = x == _width * 2 ? new Cell(-1, -1) : _map.Cells[(y - 1) / 2, x / 2];
 
                 if (symbol == MapSymbol.WallPresentVertical)
                 {
@@ -124,7 +119,7 @@ namespace Game
 
             if (symbol == MapSymbol.Visited)
             {
-                var cell = _map.Cells[(y - 1) / 2, (x - 1) / 2];
+                Cell cell = _map.Cells[(y - 1) / 2, (x - 1) / 2];
                 cell.SetHole(null);
 
                 return;
@@ -146,8 +141,8 @@ namespace Game
 
             if (y % 2 == 0)
             {
-                var cellUp = y == 0 ? new Cell(-1, -1) : _map.Cells[y / 2 - 1, (x - 1) / 2];
-                var cellDown = y == _height * 2 ? new Cell(-1, -1) : _map.Cells[y / 2, (x - 1) / 2];
+                Cell cellUp = y == 0 ? new Cell(-1, -1) : _map.Cells[y / 2 - 1, (x - 1) / 2];
+                Cell cellDown = y == _height * 2 ? new Cell(-1, -1) : _map.Cells[y / 2, (x - 1) / 2];
 
                 if (symbol == MapSymbol.WallPresentHorizontal)
                 {
@@ -175,8 +170,8 @@ namespace Game
 
             if (x % 2 == 0)
             {
-                var cellLeft = x == 0 ? new Cell(-1, -1) : _map.Cells[(y - 1) / 2, x / 2 - 1];
-                var cellRight = x == _width * 2 ? new Cell(-1, -1) : _map.Cells[(y - 1) / 2, x / 2];
+                Cell cellLeft = x == 0 ? new Cell(-1, -1) : _map.Cells[(y - 1) / 2, x / 2 - 1];
+                Cell cellRight = x == _width * 2 ? new Cell(-1, -1) : _map.Cells[(y - 1) / 2, x / 2];
 
                 if (symbol == MapSymbol.WallPresentVertical)
                 {
@@ -204,14 +199,14 @@ namespace Game
 
             if (symbol == MapSymbol.Visited)
             {
-                var cell = _map.Cells[(y - 1) / 2, (x - 1) / 2];
+                Cell cell = _map.Cells[(y - 1) / 2, (x - 1) / 2];
                 cell.SetHole(null);
 
                 return;
             }
             else if (symbol == MapSymbol.Hole) 
             {
-                var cell = _map.Cells[(y - 1) / 2, (x - 1) / 2];
+                Cell cell = _map.Cells[(y - 1) / 2, (x - 1) / 2];
                 cell.SetHole(new Hole(-1, -1));
 
                 return;

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using static Game.Direction;
-using System.Threading;
 
 namespace Game
 {
@@ -58,7 +57,6 @@ namespace Game
                 _map.Player.TakeCell(_map.Cells[row, column]);
                 _holed = false;
                 return Exploring.Holed;
-
             }
 
             if (currentCell.Wall(direction) == WallState.Present)

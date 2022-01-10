@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using static Game.Direction;
-
+using System.Linq;
 
 namespace Game
 {
@@ -22,12 +21,12 @@ namespace Game
         #endregion
 
         #region public properties
-
         public string Name => _name;
         public int Width => _width;
         public int Height => _height;
         public Cell[,] Cells => _cells;
         public Player Player => _player;
+        public bool IsReachable => CheckReachable();
 
         #endregion
 
@@ -189,8 +188,8 @@ namespace Game
 
         public Map(MapSymbol[,] symbols) //////////////////////////////// не используется
         {
-            var h = symbols.GetLength(0);
-            var w = symbols.GetLength(1);
+            int h = symbols.GetLength(0);
+            int w = symbols.GetLength(1);
             if (h % 2 != 1 || w % 2 != 1) 
             {
                 throw new MapException($"wrong symbols size {h} {w}. they both must be odd and >=3");
@@ -204,13 +203,13 @@ namespace Game
             {
                 for (int j = 0; j < _width; j++)
                 {
-                    var cellSymbol = symbols[2 * i + 1, 2 * j + 1];
-                    var wallLSymbol = j == 0 ? MapSymbol.WallPresentVertical : symbols[2 * i + 1, 2 * j];
-                    var wallRSymbol = j == _width - 1 ? MapSymbol.WallPresentVertical : symbols[2 * i + 1, 2 * j + 2];
-                    var wallUSymbol = i == 0 ? MapSymbol.WallPresentHorizontal : symbols[2 * i, 2 * j + 1];
-                    var wallDSymbol = i == _height - 1 ? MapSymbol.WallPresentVertical : symbols[2 * i + 2, 2 * j + 1];
+                    MapSymbol cellSymbol = symbols[2 * i + 1, 2 * j + 1];
+                    MapSymbol wallLSymbol = j == 0 ? MapSymbol.WallPresentVertical : symbols[2 * i + 1, 2 * j];
+                    MapSymbol wallRSymbol = j == _width - 1 ? MapSymbol.WallPresentVertical : symbols[2 * i + 1, 2 * j + 2];
+                    MapSymbol wallUSymbol = i == 0 ? MapSymbol.WallPresentHorizontal : symbols[2 * i, 2 * j + 1];
+                    MapSymbol wallDSymbol = i == _height - 1 ? MapSymbol.WallPresentVertical : symbols[2 * i + 2, 2 * j + 1];
 
-                    var cell = new Cell(i, j);
+                    Cell cell = new Cell(i, j);
 
                     if (cellSymbol == MapSymbol.Hole) 
                     {
@@ -302,6 +301,106 @@ namespace Game
             }
 
             return unsertain ? MapSymbol.CrossUnsertain : MapSymbol.CrossAbsent;
+        }
+
+        private HashSet<Cell> GetNextCells(Cell cell, bool notHoled)
+        {
+            HashSet<Cell> res = new();
+
+            int row;
+            int column;
+
+            if (notHoled)
+            {
+                row = cell.Row;
+                column = cell.Column;
+
+                if (cell.Wall(Left) == WallState.Absent && column > 0)
+                {
+                    res.Add(_cells[row, column - 1]);
+                }
+                if (cell.Wall(Right) == WallState.Absent && column < _width - 1)
+                {
+                    res.Add(_cells[row, column + 1]);
+                }
+                if (cell.Wall(Up) == WallState.Absent && row > 0)
+                {
+                    res.Add(_cells[row - 1, column]);
+                }
+                if (cell.Wall(Down) == WallState.Absent && row < _height - 1)
+                {
+                    res.Add(_cells[row + 1, column]);
+                }
+            }
+            else
+            {
+                row = cell.Hole.RowTarget;
+                column = cell.Hole.ColumnTarget;
+
+                if (
+                    row >= 0 &&
+                    row < _height &&
+                    column >= 0 &&
+                    column < _width
+                   )
+                {
+                    res.Add(_cells[row, column]);
+                }
+            }
+
+            return res;
+        }
+
+        private HashSet<Cell> AllCells() 
+        {
+            HashSet<Cell> res = new();
+
+            for (int i = 0; i < _height; i++) 
+            {
+                for (int j = 0; j < _width; j++) 
+                {
+                    res.Add(_cells[i, j]);
+                }
+            }
+
+            return res;
+        }
+
+        private bool CheckReachable(Cell cell) 
+        {
+            HashSet<Cell> unvisited = AllCells();
+            HashSet<(Cell, bool)> visited = new();
+            Stack<(Cell, bool)> toVisit = new();
+            toVisit.Push((cell, true));
+            visited.Add((cell, true));
+            unvisited.Remove(cell);
+
+            while (toVisit.Count > 0)
+            {
+                (Cell, bool) stackElement = toVisit.Pop();
+                Cell currentCell = stackElement.Item1;
+                bool currentNotHoled = stackElement.Item2;
+
+                HashSet<Cell> nextCells = GetNextCells(currentCell, currentNotHoled);
+                foreach (Cell nextCell in nextCells)
+                {
+                    bool nextNotHoled = nextCell.Hole == null || !currentNotHoled;
+
+                    if (!visited.Contains((nextCell, nextNotHoled)))
+                    {
+                        toVisit.Push((nextCell, nextNotHoled));
+                        unvisited.Remove(nextCell);
+                        visited.Add((nextCell, nextNotHoled));
+                    }
+                }
+            }
+            return unvisited.Count == 0;
+        }
+
+        private bool CheckReachable() 
+        {
+            HashSet<Cell> cells = AllCells();
+            return !cells.Any(x => !CheckReachable(x));
         }
 
         #endregion

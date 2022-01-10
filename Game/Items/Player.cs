@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Game
 {
@@ -27,8 +23,8 @@ namespace Game
 
         #endregion
 
-
         #region public methods
+
         public void TakeCell(Cell cell)
         {
             if (_cell == cell)

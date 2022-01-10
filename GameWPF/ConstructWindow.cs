@@ -1,17 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Game;
 
@@ -38,7 +29,7 @@ namespace GameWPF
         private int _holeColumn;
         private int _holeTargetRow;
         private int _holeTargetColumn;
-        private bool _defineHoLe;
+        private bool _defineHole;
 
         #endregion
 
@@ -73,7 +64,7 @@ namespace GameWPF
 
             _guessKeysTextBox = new()
             {
-                Text = "Click :change\nBcksp :explore",
+                Text = "Click :edit\nBcksp :explore",
                 FontSize = MapParameters.cellSize * 2.5,
                 Height = MapParameters.cellSize * 9,
                 Width = Math.Max(144, _guessGrid.Width),
@@ -102,7 +93,7 @@ namespace GameWPF
             _holeColumn = -1;
             _holeTargetRow = -1;
             _holeTargetColumn = -1;
-            _defineHoLe = false;
+            _defineHole = false;
 
         }
 
@@ -174,7 +165,7 @@ namespace GameWPF
                 case MapSymbol.DiodeDown:
                     return MapSymbol.WallAbsentHorizontal;
                 case MapSymbol.Visited:
-                    if (_defineHoLe)
+                    if (_defineHole)
                     {
                         return symbol;
                     }
@@ -207,19 +198,25 @@ namespace GameWPF
                 return;
             }
 
-            if (_defineHoLe)
+            if (_defineHole)
             {
                 if (row % 2 == 1 && column % 2 == 1)
                 {
                     _holeTargetRow = (row - 1) / 2;
                     _holeTargetColumn = (column - 1) / 2;
+
+                    if (_holeRow == _holeTargetRow && _holeColumn == _holeTargetColumn) 
+                    {
+                        return;
+                    }
+
                     _guess.SetHoleTarget(_holeRow, _holeColumn, _holeTargetRow, _holeTargetColumn);
                     SetHoleLine(_holeRow, _holeColumn, _holeTargetRow, _holeTargetColumn);
-                    _defineHoLe = false;
+                    _defineHole = false;
 
                     Background = MapParameters.unvisitedColor;
                     _guessKeysTextBox.Background = MapParameters.unvisitedColor;
-                    _guessKeysTextBox.Text = "Click :change\nBcksp :explore";
+                    _guessKeysTextBox.Text = "Click :edit\nBcksp :explore";
 
                     return;
                 }
@@ -234,7 +231,7 @@ namespace GameWPF
 
             if (newSymbol == MapSymbol.Hole)
             {
-                _defineHoLe = true;
+                _defineHole = true;
                 _holeRow = (row - 1) / 2;
                 _holeColumn = (column - 1) / 2;
 
@@ -259,7 +256,7 @@ namespace GameWPF
 
         private void SetHoleLine(int holeRow, int holeColumn, int holeTargetRow, int holeTargetColumn)
         {
-            Brush brush = MapParameters.startColor.Clone();
+            Brush brush = MapParameters.holeLineColor.Clone();
             brush.Opacity = 0.25;
             Line line = new()
             {
@@ -372,7 +369,7 @@ namespace GameWPF
             }
         }
 
-        private Grid FillGridFromElements(UIElement[,] elements, Grid grid)
+        private static Grid FillGridFromElements(UIElement[,] elements, Grid grid)
         {
             int height = elements.GetLength(0);
             int width = elements.GetLength(1);
@@ -391,6 +388,5 @@ namespace GameWPF
         }
 
         #endregion
-
     }
 }

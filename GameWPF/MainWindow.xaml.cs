@@ -1,29 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
-using Game;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+
+using Game;
 
 namespace GameWPF
 {
     public partial class MainWindow : Window
     {
+        #region private fields
+
         private const string MapDir = "Maps";
         private const int MapMinSize = 2;
         private const int MapMaxSize = 20;
@@ -34,6 +25,10 @@ namespace GameWPF
         private string _constructMapName;
         private int _constructMapHeight;
         private int _constructMapWidth;
+
+        #endregion
+
+        #region ctor
 
         public MainWindow()
         {
@@ -139,10 +134,82 @@ namespace GameWPF
             saveMap.Click += SaveMap;
             construct.Items.Add(saveMap);
 
-            //InitializeComponent();
+            MenuItem credits = new()
+            {
+                Header = "Credits",
+                Background = MapParameters.visitedColor,
+                Foreground = MapParameters.alertColor,
+                BorderThickness = new(0, 0, 0, 0),
+                BorderBrush = MapParameters.visitedColor,
+                Margin = new(4, 4, 4, 4),
+                Padding = new(4, 4, 4, 4),
+            };
+
+            _mainMenu.Items.Add(credits);
+
+            MenuItem info = new()
+            {
+                StaysOpenOnClick = true,
+                Header = "©2022\nVadim Sakhanenko\nsv1311@gmail.com",
+                FontSize = 12,
+                Name = "Info",
+                Background = MapParameters.visitedColor,
+                Foreground = MapParameters.alertColor,
+                BorderThickness = new(0, 0, 0, 0),
+                BorderBrush = MapParameters.visitedColor,
+                Margin = new(0, 0, 0, 0),
+                Padding = new(4, 4, 4, 4),
+            };
+            
+            credits.Items.Add(info);
+
+            TextBlock intro = new()
+            {
+                Width = 400,
+                TextWrapping = TextWrapping.Wrap,
+                Text = "It is the Labyrinth game.\n\n" +
+                "You can choose one of many labyrinths and try to explore it. " +
+                "There are some cells, walls, holes and diodes in every labyrinth. " +
+                "Diode let pass only one way. You can walk with keyboard arrows. " +
+                "When you get hole, it transfers you to another certain cell in the labyrinth. " +
+                "Your journey saves on the new tab after every hole getting. " +
+                "You can try drawing labyrinth when you have explored enough.\n\n" +
+                "Also you can make your own labyrinth and save it.\n\n" +
+                "Welcome!",
+                //Height = 38,
+                VerticalAlignment = VerticalAlignment.Center,
+                TextAlignment = TextAlignment.Justify,
+                FontSize = 17,
+                Background = MapParameters.visitedColor,
+                Foreground = MapParameters.alertColor,
+                Margin = new(10, 10, 10, 10),
+                Padding = new(10, 10, 10, 10),
+            };
+
+            _mainGrid.Children.Add(intro);
+            Grid.SetRow(intro, 1);
+            Grid.SetColumn(intro, 0);
+
+            KeyDown += (o, a) =>
+            {
+                if (a.Key == Key.Escape)
+                {
+                    if (_mainGrid.Children.Count == 2)
+                    {
+                        _mainGrid.Children.RemoveAt(1);
+                    }
+                    _mainGrid.Children.Add(intro);
+                    Grid.SetRow(intro, 1);
+                    Grid.SetColumn(intro, 0);
+                }
+            };
         }
 
-        private void Pack(Map map, string filename)
+        #endregion
+
+        #region private methods
+
+        private static void Pack(Map map, string filename)
         {
             BinaryFormatter formatter = new();
             using (FileStream fs = new(@"Maps/" + filename, FileMode.OpenOrCreate))
@@ -151,7 +218,7 @@ namespace GameWPF
             }
         }
 
-        private Map UnPack(string filename)
+        private static Map UnPack(string filename)
         {
             BinaryFormatter formatter = new();
 
@@ -174,7 +241,8 @@ namespace GameWPF
             _mainGrid.Children.Add(gameWindow);
             Grid.SetRow(gameWindow, 1);
             Grid.SetColumn(gameWindow, 0);
-            AddHandler(KeyDownEvent, new RoutedEventHandler(gameWindow.KeyAction));
+
+            KeyDown += gameWindow.KeyAction;
         }
 
         private void InputMapName(object sender, RoutedEventArgs e)
@@ -238,9 +306,10 @@ namespace GameWPF
             Grid.SetColumn(askPanel, 0);
 
             inputNameBox.Focus();
+
         }
 
-        private string CheckMapName(string mapName)
+        private static string CheckMapName(string mapName)
         {
             if (!mapName.All(x => char.IsLetterOrDigit(x)))
             {
@@ -366,11 +435,17 @@ namespace GameWPF
                 Map constructMap = _constructWindow.GuessMap;
                 string constructMapName = constructMap.Name;
 
-                ///////////////////////////////////////////////////////////// проверка на достижимость всех точек из всех
+                if (!constructMap.IsReachable) 
+                {
+                    MessageBox.Show("Not all cells are reachable. Change map!");
+                    return;
+                }
 
                 Random rnd = new();
+
                 int playerRow = rnd.Next(constructMap.Height);
                 int playerColumn = rnd.Next(constructMap.Width);
+                Cell cell = constructMap.Cells[playerRow, playerColumn];
                 constructMap.MarkStart(playerRow, playerColumn);
                 constructMap.TakePlayer(new(), playerRow, playerColumn);
 
@@ -402,5 +477,7 @@ namespace GameWPF
                 _mapsToPlay.Items.Add(newMap);
             }
         }
+
+        #endregion
     }
 }
