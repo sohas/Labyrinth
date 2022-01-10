@@ -167,6 +167,7 @@ namespace GameWPF
             {
                 Width = 400,
                 TextWrapping = TextWrapping.Wrap,
+
                 Text = "It is the Labyrinth game.\n\n" +
                 "You can choose one of many labyrinths and try to explore it. " +
                 "There are some cells, walls, holes and diodes in every labyrinth. " +
@@ -176,7 +177,7 @@ namespace GameWPF
                 "You can try drawing labyrinth when you have explored enough.\n\n" +
                 "Also you can make your own labyrinth and save it.\n\n" +
                 "Welcome!",
-                //Height = 38,
+
                 VerticalAlignment = VerticalAlignment.Center,
                 TextAlignment = TextAlignment.Justify,
                 FontSize = 17,
