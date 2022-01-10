@@ -308,11 +308,6 @@ namespace Game
 
         #region public methods
 
-        public void Serialize(string filename) 
-        {
-
-        }
-
         public void MakePerimetr()
         {
             for (int i = 0; i < _height; i++)
@@ -511,7 +506,14 @@ namespace Game
 
         public static bool CheckEquity(Map first, Map second, Func<Cell, Cell, bool> cellEquityKind)
         {
-            if (first.Height != second.Height || first.Width != second.Width)
+
+            if (
+                first == null ||
+                second == null ||
+                first.Height != second.Height ||
+                first.Width != second.Width ||
+                false
+               )
             {
                 return false;
             }

@@ -10,12 +10,13 @@ namespace GameWPF
 {
     internal static class MapParameters
     {
-        internal static Brush wallColor = new SolidColorBrush(Color.FromArgb(255, 150, 100, 50));
-        internal static Brush playerColor = new SolidColorBrush(Color.FromArgb(255, 20, 200, 100));
-        internal static Brush startColor = new SolidColorBrush(Color.FromArgb(255, 200, 20, 50));
-        internal static Brush unvisitedColor = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0));
-        internal static Brush visitedColor = new SolidColorBrush(Color.FromArgb(255, 50, 50, 50));
-        internal static Brush alertColor = new SolidColorBrush(Color.FromArgb(255, 150, 150, 150));
+        internal static Brush wallColor = new SolidColorBrush(Color.FromArgb(200, 200, 150, 100));
+        internal static Brush playerColor = new SolidColorBrush(Color.FromArgb(250, 20, 200, 100));
+        internal static Brush startColor = new SolidColorBrush(Color.FromArgb(250, 200, 20, 50));
+        internal static Brush unvisitedColor = new SolidColorBrush(Color.FromArgb(250, 0, 0, 0));
+        internal static Brush visitedColor = new SolidColorBrush(Color.FromArgb(250, 50, 50, 50));
+        internal static Brush alertColor = new SolidColorBrush(Color.FromArgb(250, 150, 150, 150));
+        internal static Brush transpColor = new SolidColorBrush(Colors.Transparent);
         internal static int wallSize = 2;
         internal static int cellSize = 8;
 

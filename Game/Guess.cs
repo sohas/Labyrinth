@@ -37,6 +37,14 @@ namespace Game
             _map.MakePerimetr();
         }
 
+        public Guess(int height, int width, string name)
+        {
+            _height = height;
+            _width = width;
+            _map = new Map(name, height, width, false, true);
+            _map.MakePerimetr();
+        }
+
         #endregion
 
         #region public methods
@@ -212,20 +220,6 @@ namespace Game
 
         public void SetHoleTarget(int holeRow, int holeColumn, int holeTargetRow, int holeTargetColumn) 
         {
-            //if (
-            //    holeRow < 0 ||
-            //    holeRow >= _height ||
-            //    holeColumn < 0 ||
-            //    holeColumn >= _width ||
-            //    holeTargetRow < 0 ||
-            //    holeTargetRow >= _height ||
-            //    holeTargetColumn < 0 ||
-            //    holeTargetColumn >= _width ||
-            //   )
-            //{
-            //    return;
-            //}
-
             Cell cell = _map.Cells[holeRow, holeColumn];
             cell.SetHole(new Hole(holeTargetRow, holeTargetColumn));
         }
