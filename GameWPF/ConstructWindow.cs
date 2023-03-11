@@ -82,10 +82,18 @@ namespace GameWPF
                 Width = _guessKeysTextBox.Width,
                 Height = _guessGrid.Height + _guessKeysTextBox.Height
             };
+
+            var guessScrollViewer = new ScrollViewer
+            {
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Content = _guessStackPanel
+            };
+
             _guessStackPanel.Children.Add(_guessKeysTextBox);
             _guessStackPanel.Children.Add(_guessGrid);
 
-            Children.Add(_guessStackPanel);
+            Children.Add(guessScrollViewer);
 
             _holeLines = new();
 
@@ -106,10 +114,12 @@ namespace GameWPF
             int wallSize = MapParameters.wallSize;
             int cellSize = MapParameters.cellSize;
 
-            Grid mapGrid = new();
-            mapGrid.ShowGridLines = false;
-            mapGrid.Height = 2 * ((mvHeight * (cellSize + wallSize)) + wallSize);
-            mapGrid.Width = 2 * ((mvWidth * (cellSize + wallSize)) + wallSize);
+            Grid mapGrid = new()
+            {
+                ShowGridLines = false,
+                Height = 2 * ((mvHeight * (cellSize + wallSize)) + wallSize),
+                Width = 2 * ((mvWidth * (cellSize + wallSize)) + wallSize)
+            };
 
             GridLength wallHeight = new(wallSize, GridUnitType.Star);
             GridLength cellWidth = new(cellSize, GridUnitType.Star);

@@ -74,7 +74,7 @@ namespace GameWPF
 
             _exploringKeysTextBox = new()
             {
-                Text = "→ ← ↓ ↑ :move\n* :guess",
+                Text = "→ ← ↓ ↑ :move\n0 :guess",
                 FontSize = MapParameters.cellSize * 2.5,
                 Height = MapParameters.cellSize * 9,
                 Width = Math.Max(144, _exploringGrid.Width),
@@ -92,9 +92,17 @@ namespace GameWPF
                 Width = _exploringKeysTextBox.Width, 
                 Height = _exploringGrid.Height + _exploringKeysTextBox.Height,
             };
-            _exploringTab.Content = _exploringStackPanel;
             _exploringStackPanel.Children.Add(_exploringKeysTextBox);
             _exploringStackPanel.Children.Add(_exploringGrid);
+
+            var exploringScrollViewer = new ScrollViewer
+            {
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Content = _exploringStackPanel
+            };
+
+            _exploringTab.Content = exploringScrollViewer;
             _exploringTab.GotFocus += ClearTabItemFocus;
             Items.Add(_exploringTab);
 
@@ -129,7 +137,7 @@ namespace GameWPF
                 FontStretch = FontStretches.Expanded,
                 Background = MapParameters.unvisitedColor,
                 Foreground = MapParameters.alertColor,
-                BorderThickness = new Thickness(0,0,0,0),
+                BorderThickness = new Thickness(0, 0, 0, 0),
                 IsReadOnly = true,
                 Focusable = false,
             };
@@ -137,12 +145,20 @@ namespace GameWPF
             _guessStackPanel = new() 
             { 
                 Width = _guessKeysTextBox.Width, 
-                Height = _guessGrid.Height + _guessKeysTextBox.Height 
+                Height = _guessGrid.Height + _guessKeysTextBox.Height,
             };
-            _guessTab.Content = _guessStackPanel;
-            _guessTab.GotFocus += ClearTabItemFocus;
             _guessStackPanel.Children.Add(_guessKeysTextBox);
             _guessStackPanel.Children.Add(_guessGrid);
+
+            var guessScrollViewer = new ScrollViewer
+            {
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Content = _guessStackPanel
+            };
+
+            _guessTab.Content = guessScrollViewer;
+            _guessTab.GotFocus += ClearTabItemFocus;
             
             _holeLines = new();
 
@@ -163,10 +179,12 @@ namespace GameWPF
             int wallSize = MapParameters.wallSize;
             int cellSize = MapParameters.cellSize;
 
-            Grid mapGrid = new();
-            mapGrid.ShowGridLines = false;
-            mapGrid.Height = 2 * ((mvHeight * (cellSize + wallSize)) + wallSize);
-            mapGrid.Width = 2 * ((mvWidth * (cellSize + wallSize)) + wallSize);
+            Grid mapGrid = new()
+            {
+                ShowGridLines = false,
+                Height = 2 * ((mvHeight * (cellSize + wallSize)) + wallSize),
+                Width = 2 * ((mvWidth * (cellSize + wallSize)) + wallSize)
+            };
 
             GridLength wallHeight = new(wallSize, GridUnitType.Star);
             GridLength cellWidth = new(cellSize, GridUnitType.Star);
@@ -507,7 +525,7 @@ namespace GameWPF
                 case Key.Down:
                     _explore.Step(Direction.Down);
                     break;
-                case Key.Multiply:
+                case Key.D0:
                     TryDrawMap();
                     break;
                 case Key.Back:
@@ -536,9 +554,8 @@ namespace GameWPF
                     Background = MapParameters.visitedColor,
                     Foreground = MapParameters.alertColor,
                     BorderBrush = MapParameters.alertColor,
+                    Content = FillGridFromElements(elements, BuildEmptyGrid((_mapHeight * 4) - 1, (_mapWidth * 4) - 1))
                 };
-
-                newTab.Content = FillGridFromElements(elements, BuildEmptyGrid((_mapHeight * 4) - 1, (_mapWidth * 4) - 1));
                 newTab.GotFocus += ClearTabItemFocus;
                 Items.Add(newTab);
 
